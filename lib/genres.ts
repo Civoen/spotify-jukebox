@@ -1,0 +1,17 @@
+export const GENRES: { label: string; neon: string; neonDim: string }[] = [
+  { label: 'Pop',       neon: '#ff2d78', neonDim: 'rgba(255,45,120,0.18)' },
+  { label: 'Rock',      neon: '#f5a623', neonDim: 'rgba(245,166,35,0.18)' },
+  { label: 'Hip-Hop',   neon: '#00ff9d', neonDim: 'rgba(0,255,157,0.18)' },
+  { label: 'R&B',       neon: '#ff6bbd', neonDim: 'rgba(255,107,189,0.18)' },
+  { label: 'Dance',     neon: '#00d4ff', neonDim: 'rgba(0,212,255,0.18)' },
+  { label: 'Electronic',neon: '#b06cf5', neonDim: 'rgba(176,108,245,0.18)' },
+  { label: 'House',     neon: '#7b2fff', neonDim: 'rgba(123,47,255,0.18)' },
+  { label: 'Soul',      neon: '#ffd700', neonDim: 'rgba(255,215,0,0.18)' },
+  { label: 'Jazz',      neon: '#40e0d0', neonDim: 'rgba(64,224,208,0.18)' },
+  { label: 'Blues',     neon: '#4f8ef7', neonDim: 'rgba(79,142,247,0.18)' },
+  { label: 'Country',   neon: '#d4a04a', neonDim: 'rgba(212,160,74,0.18)' },
+  { label: 'Indie',     neon: '#a8ff78', neonDim: 'rgba(168,255,120,0.18)' },
+  { label: 'Latin',     neon: '#ff4e50', neonDim: 'rgba(255,78,80,0.18)' },
+  { label: 'Reggae',    neon: '#00c44f', neonDim: 'rgba(0,196,79,0.18)' },
+  { label: 'Metal',     neon: '#ff7b2e', neonDim: 'rgba(255,123,46,0.18)' },
+]
