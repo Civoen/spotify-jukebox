@@ -6,7 +6,7 @@ import { getPlaylistTracks, searchTracks, playTrack, type SpotifyTrack } from '@
 import TrackRow from './TrackRow'
 
 export default function PlaylistView() {
-  const { activePlaylist, accessToken, deviceId, currentTrack, setActiveView, setContextQueue } = useJukeboxStore()
+  const { activePlaylist, accessToken, deviceId, currentTrack, setActiveView, addManyToQueue } = useJukeboxStore()
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,12 +29,12 @@ export default function PlaylistView() {
   const handlePlayAll = () => {
     if (!tracks.length || !accessToken || !deviceId) return
     if (currentTrack) {
-      // Song already playing — this playlist becomes the new fallback playlist,
-      // picking up right after any user-queued songs finish
-      setContextQueue(tracks)
+      // Song already playing — add the whole playlist to the priority queue,
+      // in order, ahead of whatever fallback playlist is already lined up
+      addManyToQueue(tracks)
     } else {
-      // Nothing playing — start immediately, rest becomes the fallback playlist
-      setContextQueue(tracks.slice(1))
+      // Nothing playing — start immediately, rest joins the priority queue
+      addManyToQueue(tracks.slice(1))
       playTrack(accessToken, tracks[0].uri, deviceId)
     }
   }

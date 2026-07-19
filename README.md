@@ -19,7 +19,7 @@ cp .env.local.example .env.local
 
 Edit `.env.local`:
 ```
-NEXT_PUBLIC_SPOTIFY_CLIENT_ID=your_client_id_here
+NEXT_PUBLIC_SPOTIFY_CLIENT_ID=3924c93209ea4adaad673532741d1a42
 NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/callback
 ```
 

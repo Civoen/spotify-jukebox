@@ -21,15 +21,16 @@ function rowLabel(i: number) {
 const chrome = 'linear-gradient(180deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 const chromeH = 'linear-gradient(90deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 
-/* ─── Curved title — arcs "Outside Inn Jukebox" along the top chrome ring ─── */
-function CurvedTitle({ vR, vCenterY }: { vR: number; vCenterY: number }) {
-  // Sits on the same curve as the inner chrome ring (gap 20 → radius vR+20),
-  // like a marquee arcing across the top of the dome.
-  const radius = vR + 20
-  const padTop = 60
-  const svgWidth = radius * 2
-  const svgHeight = radius + padTop
-  const top = vCenterY - radius - padTop
+/* ─── Curved title — a gentle marquee arc, sits in the header above the dome ─── */
+function CurvedTitle() {
+  // A shallow, standalone arc — independent of the ring radii, so the text
+  // never dips down into the neon bands. Just a gentle curve, like signage
+  // arcing above the jukebox rather than wrapping around it.
+  const svgWidth = 640
+  const svgHeight = 110
+  const chordInset = 20
+  const baselineY = 100
+  const archRadius = 1150 // large radius = shallow, gentle curve
   const pathId = 'curved-title-path'
 
   return (
@@ -37,10 +38,14 @@ function CurvedTitle({ vR, vCenterY }: { vR: number; vCenterY: number }) {
       width={svgWidth}
       height={svgHeight}
       viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      style={{ position: 'absolute', top, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}
+      style={{ display: 'block', overflow: 'visible' }}
     >
       <defs>
-        <path id={pathId} d={`M 0 ${radius + padTop} A ${radius} ${radius} 0 0 1 ${svgWidth} ${radius + padTop}`} fill="none" />
+        <path
+          id={pathId}
+          d={`M ${chordInset} ${baselineY} A ${archRadius} ${archRadius} 0 0 1 ${svgWidth - chordInset} ${baselineY}`}
+          fill="none"
+        />
         <linearGradient id="curved-title-grad" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#e8d5b0" />
           <stop offset="20%" stopColor="#c9a460" />
@@ -50,7 +55,7 @@ function CurvedTitle({ vR, vCenterY }: { vR: number; vCenterY: number }) {
         </linearGradient>
       </defs>
       <text
-        fontSize={56}
+        fontSize={40}
         fontWeight={900}
         letterSpacing="-0.01em"
         fill="url(#curved-title-grad)"
@@ -110,9 +115,6 @@ function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vinylScal
       <div style={ring(8, '#c9a227', { opacity: 0.55 })} />
       {/* Dark interior */}
       <div style={ring(2, '#030100')} />
-
-      {/* Curved title — arcs along the top chrome ring */}
-      <CurvedTitle vR={vR} vCenterY={vCenterY} />
 
       {/* Vinyl */}
       <div style={{ position: 'absolute', top: vinylTop, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
@@ -405,8 +407,10 @@ export default function HomeView() {
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #c9a22777, transparent)' }} />
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: `20px ${pad}` }}>
-          <button onClick={() => { clearToken(); window.location.reload() }} style={{ color: 'rgba(201,162,39,0.45)', padding: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
+          <div />
+          <CurvedTitle />
+          <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
             <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
               <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               <path d="M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>

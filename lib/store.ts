@@ -30,6 +30,7 @@ interface JukeboxState {
   queue: QueueTrack[]
   contextQueue: QueueTrack[]
   addToQueue: (track: SpotifyTrack) => void
+  addManyToQueue: (tracks: SpotifyTrack[]) => void
   removeFromQueue: (queueId: string) => void
   reorderQueue: (fromIndex: number, toIndex: number) => void
   importQueue: (tracks: SpotifyTrack[]) => void
@@ -112,6 +113,16 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
     // Flash recently added
     set({ recentlyAdded: track.id })
     setTimeout(() => set({ recentlyAdded: null }), 1500)
+  },
+  addManyToQueue: (tracks) => {
+    // Bulk version for Play All actions — appends a whole batch to the priority
+    // queue in order, ahead of the fallback playlist, without the per-item flash.
+    const queueTracks: QueueTrack[] = tracks.map((t, i) => ({
+      ...t,
+      queueId: `${t.id}-many-${i}-${Date.now()}-${Math.random()}`,
+      addedAt: Date.now() + i,
+    }))
+    set((s) => ({ queue: [...s.queue, ...queueTracks] }))
   },
   removeFromQueue: (queueId) =>
     set((s) => ({ queue: s.queue.filter((t) => t.queueId !== queueId) })),
