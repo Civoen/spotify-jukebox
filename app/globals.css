@@ -101,6 +101,10 @@ body {
   0%, 100% { box-shadow: 0 0 6px 2px currentColor, 0 0 20px 4px currentColor; opacity: 0.9; }
   50% { box-shadow: 0 0 10px 3px currentColor, 0 0 35px 8px currentColor; opacity: 1; }
 }
+@keyframes text-neon-pulse {
+  0%, 100% { text-shadow: 0 0 6px currentColor, 0 0 16px currentColor, 0 0 34px currentColor; opacity: 0.92; }
+  50% { text-shadow: 0 0 10px currentColor, 0 0 26px currentColor, 0 0 52px currentColor; opacity: 1; }
+}
 
 .animate-spin-slow { animation: spin-slow 10s linear infinite; }
 .vinyl-playing { animation: vinyl-spin 2.5s linear infinite; }
@@ -127,6 +131,7 @@ body {
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .neon-flicker { animation: neon-flicker 6s ease-in-out infinite; }
 .neon-pulse { animation: neon-pulse 2s ease-in-out infinite; }
+.text-neon-pulse { animation: text-neon-pulse 2.4s ease-in-out infinite; }
 
 .eq-bar {
   transform-origin: bottom;
