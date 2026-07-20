@@ -58,9 +58,15 @@ const BAR_COUNT = 72
 function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; isPlaying: boolean; progress: number }) {
   const bars = useMemo(() => seededBars(track?.id ?? 'idle', BAR_COUNT), [track?.id])
   const art = track?.album.images?.[0]?.url
+  const pad = 'max(16px, calc(50% - 432px))'
 
   return (
-    <div style={{ position: 'relative', height: 300, flexShrink: 0, overflow: 'hidden' }}>
+    <div style={{
+      margin: `4px ${pad} 20px`, borderRadius: 28, overflow: 'hidden',
+      position: 'relative', height: 260, flexShrink: 0,
+      border: '1px solid rgba(255,255,255,0.09)',
+      boxShadow: '0 0 40px rgba(255,45,120,0.10), 0 14px 36px rgba(0,0,0,0.45)',
+    }}>
       {art ? (
         <img src={art} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(50px) brightness(0.45) saturate(1.5)', transform: 'scale(1.3)' }} />
       ) : (
@@ -68,7 +74,7 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
       )}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,6,10,0.25) 0%, rgba(8,6,10,0.75) 75%, #08060a 100%)' }} />
 
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 3, padding: '0 max(24px, calc(50% - 488px))' }}>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 3, padding: '0 32px' }}>
         {bars.map((h, i) => {
           const isPast = i / bars.length <= progress / 100
           return (
@@ -268,6 +274,14 @@ export default function ModernHomeView() {
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ color: 'var(--retro-cream)', background: 'radial-gradient(ellipse at 50% 0%, rgba(80,20,60,0.15) 0%, transparent 55%), #08060a' }}>
 
+      {/* ── Top bar — matches the Standard theme's height exactly, so the header/title land in the same vertical position on both views ── */}
+      <div style={{ height: 10, background: 'linear-gradient(90deg, #ff2d78 0%, #ff8fc4 25%, #ffffff 50%, #4ee0ff 75%, #00d4ff 100%)', opacity: 0.8, flexShrink: 0 }} />
+      <div style={{ display: 'flex', height: 12, flexShrink: 0 }}>
+        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #ff2d7855, transparent)' }} />
+        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #ffffff33, transparent)' }} />
+        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
+      </div>
+
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
         <button
@@ -286,12 +300,12 @@ export default function ModernHomeView() {
         </button>
       </div>
 
-      {/* ── Title ── */}
+      {/* ── Title — same size as the Standard theme's title ── */}
       <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${pad} 4px` }}>
-        <p style={{ fontSize: 12, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 4, fontWeight: 500 }}>Welcome To</p>
+        <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
         <h1 style={{
-          fontSize: 30, fontWeight: 800, letterSpacing: '-0.01em', color: '#fff',
-          textShadow: '0 0 12px rgba(255,45,120,0.55), 0 0 32px rgba(255,45,120,0.25)',
+          fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
+          textShadow: '0 0 14px rgba(255,45,120,0.55), 0 0 40px rgba(255,45,120,0.3)',
         }}>
           The Outside Inn Jukebox
         </h1>

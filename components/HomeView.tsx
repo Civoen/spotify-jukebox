@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import {
-  searchAll, clearToken, formatDuration, searchDecadeSongs,
+  searchAll, clearToken, formatDuration, searchDecadeSongs, searchGenreSongs,
   previousTrack as prevTrackApi, findOrCreateJukeboxPlaylist, addTrackToJukeboxPlaylist,
   type SpotifyTrack, type SpotifyArtist, type SpotifyAlbum,
 } from '@/lib/spotify'
@@ -130,6 +130,7 @@ export default function HomeView() {
 
   const [loading, setLoading] = useState(true)
   const [loadingDecade, setLoadingDecade] = useState<string | null>(null)
+  const [loadingGenre, setLoadingGenre] = useState<string | null>(null)
 
   // Inline search dropdown
   const [inlineQuery, setInlineQuery] = useState('')
@@ -194,6 +195,33 @@ export default function HomeView() {
       console.error(e)
     } finally {
       setLoadingDecade(null)
+    }
+  }
+
+  const handleGenrePlay = async (genre: string) => {
+    if (!accessToken || loadingGenre) return
+    setLoadingGenre(genre)
+    try {
+      const tracks = await searchGenreSongs(genre, accessToken)
+      if (!tracks.length) return
+      const shuffled = [...tracks]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      if (ct) {
+        setContextQueue(shuffled)
+      } else if (did) {
+        setContextQueue(shuffled.slice(1))
+        playTrack(accessToken, shuffled[0].uri, did)
+      } else {
+        setContextQueue(shuffled)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingGenre(null)
     }
   }
 
@@ -650,19 +678,23 @@ export default function HomeView() {
             const HOME_GENRES = GENRES.filter(g => ['Pop','Rock','Dance','Electronic','Metal'].includes(g.label))
             return (
               <div style={{ padding: `10px ${pad} 16px`, display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
-                {HOME_GENRES.map(({ label, neon, neonDim }) => (
+                {HOME_GENRES.map(({ label, neon, neonDim }) => {
+                  const isLoading = loadingGenre === label
+                  return (
                   <div
                     key={label}
                     style={{
                       padding: 2,
                       borderRadius: 12,
-                      background: chromeH,
-                      boxShadow: '0 0 6px rgba(201,162,39,0.15)',
+                      background: isLoading ? neon : chromeH,
+                      boxShadow: isLoading ? `0 0 20px ${neon}66` : '0 0 6px rgba(201,162,39,0.15)',
+                      opacity: loadingGenre && !isLoading ? 0.35 : 1,
                       transition: 'all 0.2s',
                     }}
                   >
                     <button
-                      onClick={() => { setSearchQuery(label); setActiveView('search') }}
+                      onClick={() => handleGenrePlay(label)}
+                      disabled={!!loadingGenre}
                       className="active:scale-[0.97]"
                       style={{
                         width: '100%',
@@ -673,14 +705,19 @@ export default function HomeView() {
                         border: 'none',
                         position: 'relative',
                         overflow: 'hidden',
-                        boxShadow: 'inset 0 0 12px rgba(0,0,0,0.5)',
+                        boxShadow: isLoading ? `inset 0 0 16px ${neonDim}` : 'inset 0 0 12px rgba(0,0,0,0.5)',
                       }}
                     >
                       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 36, background: `linear-gradient(0deg, ${neonDim} 0%, transparent 100%)`, pointerEvents: 'none' }} />
-                      <span className="font-retro" style={{ fontSize: 16, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 10px ${neon}88`, lineHeight: 1 }}>{label}</span>
+                      {isLoading ? (
+                        <div className="skeleton" style={{ width: 20, height: 20, borderRadius: '50%' }} />
+                      ) : (
+                        <span className="font-retro" style={{ fontSize: 16, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 10px ${neon}88`, lineHeight: 1 }}>{label}</span>
+                      )}
                     </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )
           })()}
