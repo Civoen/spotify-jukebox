@@ -79,6 +79,14 @@ interface JukeboxState {
   setKeyboardVisible: (v: boolean) => void
   onKeyPress: ((key: string) => void) | null
   setOnKeyPress: (cb: ((key: string) => void) | null) => void
+
+  // UI theme — lets users switch between the Standard (retro) and Modern designs
+  uiTheme: 'retro' | 'modern'
+  setUiTheme: (theme: 'retro' | 'modern') => void
+
+  // Popularity — tracks how many times each track has been played on this jukebox
+  popularity: Record<string, { track: SpotifyTrack; count: number }>
+  incrementPopularity: (track: SpotifyTrack) => void
 }
 
 export const useJukeboxStore = create<JukeboxState>((set, get) => ({
@@ -213,4 +221,30 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
   setKeyboardVisible: (v) => set({ keyboardVisible: v }),
   onKeyPress: null,
   setOnKeyPress: (cb) => set({ onKeyPress: cb }),
+
+  // UI theme
+  uiTheme: (typeof window !== 'undefined' && (localStorage.getItem('jukebox-ui-theme') as 'retro' | 'modern')) || 'retro',
+  setUiTheme: (theme) => {
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('jukebox-ui-theme', theme) } catch {}
+    }
+    set({ uiTheme: theme })
+  },
+
+  // Popularity
+  popularity: (() => {
+    if (typeof window === 'undefined') return {}
+    try {
+      const raw = localStorage.getItem('jukebox-popularity')
+      return raw ? JSON.parse(raw) : {}
+    } catch { return {} }
+  })(),
+  incrementPopularity: (track) => set((s) => {
+    const existing = s.popularity[track.id]
+    const next = { ...s.popularity, [track.id]: { track, count: (existing?.count ?? 0) + 1 } }
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('jukebox-popularity', JSON.stringify(next)) } catch {}
+    }
+    return { popularity: next }
+  }),
 }))

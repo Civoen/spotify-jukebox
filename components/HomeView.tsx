@@ -11,15 +11,12 @@ import { DECADE_SONGS } from '@/lib/decade-tracks'
 import { GENRES } from '@/lib/genres'
 import { globalPlayer } from './SpotifyPlayer'
 import { playTrack } from '@/lib/spotify'
-import SpinningVinyl from './SpinningVinyl'
 import TrackRow from './TrackRow'
+import { ArchCrown, ChromeStrip, chrome, chromeH } from './ArchCrown'
 
 function rowLabel(i: number) {
   return `${String.fromCharCode(65 + Math.floor(i / 9))}${(i % 9) + 1}`
 }
-
-const chrome = 'linear-gradient(180deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
-const chromeH = 'linear-gradient(90deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 
 /* ─── Logo ─── */
 function JukeboxLogo() {
@@ -42,67 +39,6 @@ function JukeboxLogo() {
       <div style={{ fontSize: 20, letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(201,162,39,0.4)', fontFamily: 'monospace', marginTop: 7 }}>── jukebox ──</div>
     </div>
   )
-}
-
-/* ─── Arch crown ─── */
-function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vinylScale = 1 }: {
-  albumArt?: string; isPlaying: boolean; vinylSize?: number; topPad?: number; vinylScale?: number
-}) {
-  const vR = vinylSize / 2
-  const vCenterY = topPad + vR
-  const archH = topPad + vR
-  // Scaled vinyl dims — keep centred on same vCenterY
-  const scaledVinylSize = vinylSize * vinylScale
-  const scaledVR = scaledVinylSize / 2
-  const vinylTop = vCenterY - scaledVR
-
-  // Circular ring: each layer is a full circle centered on the vinyl center,
-  // with radius = vinyl radius + gap. Painted large-to-small to create rings.
-  const ring = (gap: number, bg: string, extra?: React.CSSProperties) => {
-    const d = (vR + gap) * 2
-    return {
-      position: 'absolute' as const,
-      width: d, height: d,
-      borderRadius: '50%',
-      top: vCenterY - (vR + gap),
-      left: '50%',
-      transform: 'translateX(-50%)',
-      background: bg,
-      ...extra,
-    }
-  }
-
-  return (
-    <div style={{ position: 'relative', height: archH, flexShrink: 0, overflow: 'hidden' }}>
-      {/* Chrome outer ring */}
-      <div style={ring(60, chromeH)} />
-      <div style={ring(50, '#050200')} />
-      {/* Pink neon */}
-      <div style={ring(44, '#ff2d78', { boxShadow: '0 0 16px 5px #ff2d7866', animation: 'neon-pulse 2.5s ease-in-out 0s infinite' })} />
-      <div style={ring(38, '#050200')} />
-      {/* Cyan neon */}
-      <div style={ring(32, '#00d4ff', { boxShadow: '0 0 14px 4px #00d4ff55', animation: 'neon-pulse 2.8s ease-in-out 1.2s infinite' })} />
-      <div style={ring(26, '#050200')} />
-      {/* Inner chrome ring */}
-      <div style={ring(20, chromeH, { opacity: 0.85 })} />
-      <div style={ring(14, '#050200')} />
-      {/* Gold accent */}
-      <div style={ring(8, '#c9a227', { opacity: 0.55 })} />
-      {/* Dark interior */}
-      <div style={ring(2, '#030100')} />
-
-      {/* Vinyl */}
-      <div style={{ position: 'absolute', top: vinylTop, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
-        <SpinningVinyl albumArt={albumArt} isPlaying={isPlaying} size={scaledVinylSize} />
-      </div>
-
-    </div>
-  )
-}
-
-/* ─── Chrome strip ─── */
-function ChromeStrip({ height = 8, opacity = 1 }: { height?: number; opacity?: number }) {
-  return <div style={{ height, width: '100%', flexShrink: 0, background: chromeH, opacity }} />
 }
 
 /* ─── Speaker grille ─── */
@@ -188,8 +124,8 @@ export default function HomeView() {
   const {
     accessToken, deviceId, setActiveView, setActivePlaylist, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, queue, contextQueue, skipNext, addToQueue,
-    playHistory, addToHistory, setKeyboardVisible, setOnKeyPress,
-    volume, setVolume, setSearchQuery,
+    playHistory, addToHistory, incrementPopularity, setKeyboardVisible, setOnKeyPress,
+    volume, setVolume, setSearchQuery, setUiTheme,
   } = useJukeboxStore()
 
   const [loading, setLoading] = useState(true)
@@ -215,6 +151,7 @@ export default function HomeView() {
   useEffect(() => {
     if (!currentTrack || !accessToken) return
     addToHistory(currentTrack)
+    incrementPopularity(currentTrack)
     const uri = currentTrack.uri
     const addToYearlyPlaylist = async () => {
       if (!jukeboxPlaylistId.current) {
@@ -383,7 +320,12 @@ export default function HomeView() {
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
-          <div />
+          <button onClick={() => setUiTheme('modern')} aria-label="Switch to Modern design" style={{ justifySelf: 'start', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M4 8a7 7 0 0 1 12-4.5M18 4v4h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M18 14a7 7 0 0 1-12 4.5M4 18v-4h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           <JukeboxLogo />
           <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
             <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
