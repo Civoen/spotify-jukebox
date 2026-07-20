@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import {
   clearToken, formatDuration, searchDecadeSongs, searchAll,
@@ -11,7 +11,6 @@ import {
 import { DECADE_SONGS } from '@/lib/decade-tracks'
 import { GENRES } from '@/lib/genres'
 import { globalPlayer } from './SpotifyPlayer'
-import { ArchCrown } from './ArchCrown'
 
 const MODERN_GENRES = GENRES.filter(g =>
   ['Pop', 'Rock', 'Hip-Hop', 'R&B', 'Dance', 'Electronic', 'Jazz', 'Metal'].includes(g.label)
@@ -37,6 +36,59 @@ function glassPanel(glowColor: string) {
     border: '1px solid rgba(255,255,255,0.09)',
     boxShadow: `0 0 32px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.05)`,
   } as React.CSSProperties
+}
+
+// Deterministic pseudo-random bar heights, seeded by track id — the shape
+// stays consistent for a given song rather than jittering on every render,
+// but differs from song to song since Spotify doesn't expose real waveform data.
+function seededBars(seed: string, count: number): number[] {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  let s = h || 1
+  const bars: number[] = []
+  for (let i = 0; i < count; i++) {
+    s = (s * 1103515245 + 12345) >>> 0
+    bars.push(0.22 + ((s >>> 8) % 1000) / 1000 * 0.78)
+  }
+  return bars
+}
+
+const BAR_COUNT = 72
+
+function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; isPlaying: boolean; progress: number }) {
+  const bars = useMemo(() => seededBars(track?.id ?? 'idle', BAR_COUNT), [track?.id])
+  const art = track?.album.images?.[0]?.url
+
+  return (
+    <div style={{ position: 'relative', height: 300, flexShrink: 0, overflow: 'hidden' }}>
+      {art ? (
+        <img src={art} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(50px) brightness(0.45) saturate(1.5)', transform: 'scale(1.3)' }} />
+      ) : (
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(255,45,120,0.22), transparent 60%), #0d0710' }} />
+      )}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,6,10,0.25) 0%, rgba(8,6,10,0.75) 75%, #08060a 100%)' }} />
+
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', gap: 3, padding: '0 max(24px, calc(50% - 488px))' }}>
+        {bars.map((h, i) => {
+          const isPast = i / bars.length <= progress / 100
+          return (
+            <div
+              key={i}
+              style={{
+                flex: '1 1 0',
+                minWidth: 2,
+                height: `${h * 100}%`,
+                borderRadius: 3,
+                background: isPast ? 'linear-gradient(180deg, #ff8ac0, #ff2d78)' : 'rgba(255,255,255,0.14)',
+                boxShadow: isPast ? '0 0 10px rgba(255,45,120,0.45)' : 'none',
+                animation: isPlaying ? `equalizer ${0.55 + (i % 5) * 0.14}s ease-in-out ${(i % 9) * 0.07}s infinite` : 'none',
+              }}
+            />
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function ModernHomeView() {
@@ -210,10 +262,8 @@ export default function ModernHomeView() {
         </button>
       </div>
 
-      {/* ── Arch + vinyl ── */}
-      <div style={{ flexShrink: 0, marginTop: -20 }}>
-        <ArchCrown albumArt={albumArt} isPlaying={isPlaying} vinylSize={880} topPad={80} vinylScale={0.85} />
-      </div>
+      {/* ── Waveform hero ── */}
+      <Waveform track={currentTrack} isPlaying={isPlaying} progress={progress} />
 
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
 

@@ -169,7 +169,7 @@ export default function QueueView() {
                 </div>
                 <span className="text-white/20 text-xs w-4 text-right flex-shrink-0">{idx + 1}</span>
                 <div className="flex-1">
-                  <TrackRow track={track} inQueue={true} queueId={track.queueId} />
+                  <TrackRow track={track} inQueue={true} queueId={track.queueId} isFirstInQueue={idx === 0} />
                 </div>
               </div>
             ))}

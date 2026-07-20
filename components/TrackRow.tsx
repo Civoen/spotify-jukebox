@@ -9,9 +9,10 @@ interface Props {
   track: SpotifyTrack
   inQueue?: boolean
   queueId?: string
+  isFirstInQueue?: boolean
 }
 
-export default function TrackRow({ track, inQueue, queueId }: Props) {
+export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Props) {
   const {
     accessToken,
     deviceId,
@@ -30,15 +31,20 @@ export default function TrackRow({ track, inQueue, queueId }: Props) {
 
   const art = getAlbumArt(track, 'sm')
 
+  const moveToTop = () => {
+    if (!queueId) return
+    const { queue, reorderQueue } = useJukeboxStore.getState()
+    const idx = queue.findIndex(t => t.queueId === queueId)
+    if (idx > 0) reorderQueue(idx, 0)
+  }
+
   const handleAdd = (e?: React.MouseEvent) => {
     e?.stopPropagation()
     const currentView = useJukeboxStore.getState().activeView
     const stayOnPage = currentView === 'search' || currentView === 'queue'
     if (inQueue && queueId) {
       // Move to front of queue so it plays next
-      const { queue, reorderQueue } = useJukeboxStore.getState()
-      const idx = queue.findIndex(t => t.queueId === queueId)
-      if (idx > 0) reorderQueue(idx, 0)
+      moveToTop()
       return
     }
     if (!currentTrack && accessToken && deviceId) {
@@ -117,17 +123,32 @@ export default function TrackRow({ track, inQueue, queueId }: Props) {
         {formatDuration(track.duration_ms)}
       </span>
 
-      {/* Action button */}
+      {/* Action buttons */}
       {inQueue ? (
-        <button
-          onClick={handleRemove}
-          className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0
-            text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all duration-150"
-        >
-          <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
-            <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {!isFirstInQueue && (
+            <button
+              onClick={(e) => { e.stopPropagation(); moveToTop() }}
+              aria-label="Move to top of queue"
+              className="w-11 h-11 rounded-full flex items-center justify-center
+                text-white/30 hover:text-pink-400 hover:bg-pink-400/10 transition-all duration-150"
+            >
+              <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                <path d="M7 11V3M3 6.5L7 2.5L11 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+          <button
+            onClick={handleRemove}
+            aria-label="Remove from queue"
+            className="w-11 h-11 rounded-full flex items-center justify-center
+              text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all duration-150"
+          >
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
       ) : (
         <div className="relative flex-shrink-0">
           {justAdded && (
