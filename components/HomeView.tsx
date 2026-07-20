@@ -21,50 +21,26 @@ function rowLabel(i: number) {
 const chrome = 'linear-gradient(180deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 const chromeH = 'linear-gradient(90deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 
-/* ─── Curved title — a bold marquee arc, bent to match the jukebox dome's own curve ─── */
-function CurvedTitle() {
-  // Radius matches the dome's outer chrome ring (~500px) so the bend genuinely
-  // resembles the jukebox's own arch, not just a generic gentle curve.
-  const svgWidth = 760
-  const svgHeight = 250
-  const chordInset = 30
-  const baselineY = 235
-  const archRadius = 520
-  const pathId = 'curved-title-path'
-
+/* ─── Logo ─── */
+function JukeboxLogo() {
   return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      style={{ display: 'block', overflow: 'visible' }}
-    >
-      <defs>
-        <path
-          id={pathId}
-          d={`M ${chordInset} ${baselineY} A ${archRadius} ${archRadius} 0 0 1 ${svgWidth - chordInset} ${baselineY}`}
-          fill="none"
-        />
-        <linearGradient id="curved-title-grad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#e8d5b0" />
-          <stop offset="20%" stopColor="#c9a460" />
-          <stop offset="50%" stopColor="#f5e8c0" />
-          <stop offset="80%" stopColor="#b8902a" />
-          <stop offset="100%" stopColor="#e0c878" />
-        </linearGradient>
-      </defs>
-      <text
-        fontSize={70}
-        fontWeight={900}
-        letterSpacing="-0.01em"
-        fill="url(#curved-title-grad)"
-        style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+    <div style={{ textAlign: 'center', lineHeight: 1 }}>
+      <div style={{ fontSize: 20, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(201,162,39,0.55)', fontFamily: 'monospace', marginBottom: 6 }}>♪ welcome to ♪</div>
+      <div
+        className="font-retro text-neon-pulse"
+        style={{
+          fontSize: 56,
+          fontWeight: 900,
+          letterSpacing: '-0.01em',
+          lineHeight: 1.05,
+          color: '#ff5fa0',
+          textShadow: '0 0 6px #ff2d78, 0 0 16px #ff2d78, 0 0 34px #ff2d78',
+        }}
       >
-        <textPath href={`#${pathId}`} startOffset="50%" textAnchor="middle">
-          Outside Inn Jukebox
-        </textPath>
-      </text>
-    </svg>
+        The Outside Inn
+      </div>
+      <div style={{ fontSize: 20, letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(201,162,39,0.4)', fontFamily: 'monospace', marginTop: 7 }}>── jukebox ──</div>
+    </div>
   )
 }
 
@@ -406,10 +382,10 @@ export default function HomeView() {
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #c9a22777, transparent)' }} />
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'start', padding: `12px ${pad} 0` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
           <div />
-          <CurvedTitle />
-          <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', marginTop: 16, color: 'rgba(201,162,39,0.45)', padding: 8 }}>
+          <JukeboxLogo />
+          <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
             <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
               <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
               <path d="M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
