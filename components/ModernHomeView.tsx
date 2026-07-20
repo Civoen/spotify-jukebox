@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import {
-  clearToken, formatDuration, searchDecadeSongs, searchAll,
+  clearToken, formatDuration, searchDecadeSongs, searchGenreSongs, searchAll,
   previousTrack as prevTrackApi, findOrCreateJukeboxPlaylist, addTrackToJukeboxPlaylist,
   playTrack, getAlbumArt,
   type SpotifyTrack, type SpotifyArtist, type SpotifyAlbum,
@@ -96,10 +96,11 @@ export default function ModernHomeView() {
     accessToken, deviceId, setActiveView, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, skipNext, addToQueue,
     playHistory, addToHistory, incrementPopularity, popularity,
-    setKeyboardVisible, setOnKeyPress, setSearchQuery, setUiTheme,
+    setKeyboardVisible, setOnKeyPress, setUiTheme,
   } = useJukeboxStore()
 
   const [loadingDecade, setLoadingDecade] = useState<string | null>(null)
+  const [loadingGenre, setLoadingGenre] = useState<string | null>(null)
   const [inlineQuery, setInlineQuery] = useState('')
   const inlineQueryRef = useRef('')
   const jukeboxPlaylistId = useRef<string | null>(null)
@@ -210,9 +211,31 @@ export default function ModernHomeView() {
     }
   }
 
-  const handleGenreClick = (label: string) => {
-    setSearchQuery(label)
-    setActiveView('search')
+  const handleGenreClick = async (label: string) => {
+    if (!accessToken || loadingGenre) return
+    setLoadingGenre(label)
+    try {
+      const tracks = await searchGenreSongs(label, accessToken)
+      if (!tracks.length) return
+      const shuffled = [...tracks]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      if (ct) {
+        setContextQueue(shuffled)
+      } else if (did) {
+        setContextQueue(shuffled.slice(1))
+        playTrack(accessToken, shuffled[0].uri, did)
+      } else {
+        setContextQueue(shuffled)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingGenre(null)
+    }
   }
 
   const togglePlay = () => {
@@ -240,26 +263,38 @@ export default function ModernHomeView() {
     .slice(0, 8)
     .map(p => p.track)
 
-  const pad = 'max(16px, calc(50% - 512px))'
+  const pad = 'max(16px, calc(50% - 432px))'
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ color: 'var(--retro-cream)', background: 'radial-gradient(ellipse at 50% 0%, rgba(80,20,60,0.15) 0%, transparent 55%), #08060a' }}>
 
-      {/* ── Header ── */}
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `20px ${pad} 0` }}>
+      {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
         <button
           onClick={() => setUiTheme('retro')}
           aria-label="Switch to Standard design"
-          style={{ color: 'rgba(255,255,255,0.5)', padding: 8 }}
+          style={{ justifySelf: 'start', color: 'rgba(255,255,255,0.5)', padding: 8 }}
         >
           <SwitchDesignIcon />
         </button>
-        <button onClick={() => { clearToken(); window.location.reload() }} style={{ color: 'rgba(255,255,255,0.4)', padding: 8 }}>
-          <svg width="22" height="22" viewBox="0 0 14 14" fill="none">
+        <div />
+        <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(255,255,255,0.4)', padding: 8 }}>
+          <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
             <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
             <path d="M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
+      </div>
+
+      {/* ── Title ── */}
+      <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${pad} 4px` }}>
+        <p style={{ fontSize: 12, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 4, fontWeight: 500 }}>Welcome To</p>
+        <h1 style={{
+          fontSize: 30, fontWeight: 800, letterSpacing: '-0.01em', color: '#fff',
+          textShadow: '0 0 12px rgba(255,45,120,0.55), 0 0 32px rgba(255,45,120,0.25)',
+        }}>
+          The Outside Inn Jukebox
+        </h1>
       </div>
 
       {/* ── Waveform hero ── */}
@@ -267,29 +302,24 @@ export default function ModernHomeView() {
 
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
 
-        {/* ── Title ── */}
-        <div style={{ textAlign: 'center', padding: `4px ${pad} 22px` }}>
-          <p style={{ fontSize: 12, letterSpacing: '0.35em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 4, fontWeight: 500 }}>Welcome To</p>
-          <h1 style={{
-            fontSize: 30, fontWeight: 800, letterSpacing: '-0.01em', color: '#fff',
-            textShadow: '0 0 12px rgba(255,45,120,0.55), 0 0 32px rgba(255,45,120,0.25)',
-          }}>
-            The Outside Inn Jukebox
-          </h1>
-        </div>
-
-        <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: `0 ${pad} 24px` }}>
+        <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: `18px ${pad} 24px` }}>
 
           {/* Genres panel */}
           <div style={{ ...glassPanel('rgba(255,45,120,0.10)'), padding: '20px 0' }}>
             <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ff6bb0', marginBottom: 10 }}>GENRES</p>
-            {MODERN_GENRES.map((g, i) => (
-              <button key={g.label} onClick={() => handleGenreClick(g.label)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '13px 22px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)' }}>{g.label}</span>
-                <span style={{ color: '#ff6bb0', fontSize: 14 }}>›</span>
-              </button>
-            ))}
+            {MODERN_GENRES.map((g, i) => {
+              const isLoading = loadingGenre === g.label
+              return (
+                <button key={g.label} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '13px 22px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none', opacity: loadingGenre && !isLoading ? 0.4 : 1 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {isLoading && <span className="skeleton" style={{ width: 12, height: 12, borderRadius: '50%' }} />}
+                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)' }}>{g.label}</span>
+                  </span>
+                  <span style={{ color: '#ff6bb0', fontSize: 14 }}>›</span>
+                </button>
+              )
+            })}
           </div>
 
           {/* Now Playing panel */}

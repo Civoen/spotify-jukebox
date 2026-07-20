@@ -267,6 +267,37 @@ export async function searchDecadeSongs(
   return results
 }
 
+export async function searchGenreSongs(
+  genre: string,
+  token: string,
+  limit = 30
+): Promise<SpotifyTrack[]> {
+  const cacheKey = genre.toLowerCase().replace(/\s+/g, '-')
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(`jukebox_genre_v1_${cacheKey}`)
+      if (raw) {
+        const { ts, tracks } = JSON.parse(raw) as { ts: number; tracks: SpotifyTrack[] }
+        if (Date.now() - ts < DECADE_CACHE_TTL && tracks.length > 0) return tracks
+      }
+    } catch {}
+  }
+
+  const data = await spotifyFetch<{ tracks: { items: SpotifyTrack[] } }>(
+    `/search?q=${encodeURIComponent(`genre:"${genre}"`)}&type=track&limit=${limit}&market=from_token`,
+    token
+  )
+  const results = data.tracks.items.filter(Boolean)
+
+  if (typeof window !== 'undefined' && results.length > 0) {
+    try {
+      localStorage.setItem(`jukebox_genre_v1_${cacheKey}`, JSON.stringify({ ts: Date.now(), tracks: results }))
+    } catch {}
+  }
+
+  return results
+}
+
 export async function searchAlbums(
   query: string,
   token: string,

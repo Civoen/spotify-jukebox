@@ -2,61 +2,63 @@
 
 import { useJukeboxStore } from '@/lib/store'
 
-const chromeH = 'linear-gradient(90deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
-
-const TAB_COLORS = {
-  home:   '#ff2d78',
-  search: '#c9a227',
-  queue:  '#00d4ff',
-} as const
-
 const tabs = [
   {
     id: 'home' as const,
     label: 'Now Playing',
-    icon: (active: boolean) => (
+    icon: (active: boolean, color: string) => (
       <svg width="28" height="28" viewBox="0 0 22 22" fill="none">
-        <circle cx="11" cy="11" r="8" stroke={active ? TAB_COLORS.home : 'currentColor'} strokeWidth="1.5" />
-        <circle cx="11" cy="11" r="4" stroke={active ? TAB_COLORS.home : 'currentColor'} strokeWidth="1.5" />
-        <circle cx="11" cy="11" r="1.5" fill={active ? TAB_COLORS.home : 'currentColor'} />
+        <circle cx="11" cy="11" r="8" stroke={active ? color : 'currentColor'} strokeWidth="1.5" />
+        <circle cx="11" cy="11" r="4" stroke={active ? color : 'currentColor'} strokeWidth="1.5" />
+        <circle cx="11" cy="11" r="1.5" fill={active ? color : 'currentColor'} />
       </svg>
     ),
   },
   {
     id: 'search' as const,
     label: 'Search',
-    icon: (active: boolean) => (
+    icon: (active: boolean, color: string) => (
       <svg width="28" height="28" viewBox="0 0 22 22" fill="none">
-        <circle cx="10" cy="10" r="6.5" stroke={active ? TAB_COLORS.search : TAB_COLORS.search} strokeWidth="1.5" />
-        <path d="M15 15L19 19" stroke={active ? TAB_COLORS.search : TAB_COLORS.search} strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="10" cy="10" r="6.5" stroke={color} strokeWidth="1.5" />
+        <path d="M15 15L19 19" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
   {
     id: 'queue' as const,
     label: 'Queue',
-    icon: (active: boolean) => (
+    icon: (active: boolean, color: string) => (
       <svg width="28" height="28" viewBox="0 0 22 22" fill="none">
-        <path d="M4 7H18M4 11H18M4 15H13" stroke={active ? TAB_COLORS.queue : TAB_COLORS.queue} strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 7H18M4 11H18M4 15H13" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
 ]
 
 export default function BottomNav() {
-  const { activeView, setActiveView, queue } = useJukeboxStore()
+  const { activeView, setActiveView, queue, uiTheme } = useJukeboxStore()
+  const isModern = uiTheme === 'modern'
 
   const activeTab = activeView === 'artist' ? 'search'
     : (activeView === 'album' || activeView === 'playlist') ? 'home'
     : activeView as 'home' | 'search' | 'queue'
 
+  // Modern reuses its own amber accent (matching the Most Popular panel)
+  // instead of the Standard theme's muted retro gold, so all three tabs
+  // stay visually consistent with whichever design is active.
+  const TAB_COLORS = {
+    home: '#ff2d78',
+    search: isModern ? '#ffb454' : '#c9a227',
+    queue: '#00d4ff',
+  } as const
+
   return (
-    <div className="flex-shrink-0" style={{ background: 'rgba(14,8,0,0.97)' }}>
+    <div className="flex-shrink-0" style={{ background: isModern ? 'rgba(8,6,10,0.97)' : 'rgba(14,8,0,0.97)', transition: 'background 0.3s' }}>
 
       {/* Tri-colour glow diffusion — brighter on active tab */}
       <div style={{ display: 'flex', height: 14 }}>
         <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'home' ? '#ff2d78bb' : '#ff2d7830'}, transparent)`, transition: 'background 0.3s' }} />
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'search' ? '#c9a227bb' : '#c9a22730'}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'search' ? `${TAB_COLORS.search}bb` : `${TAB_COLORS.search}30`}, transparent)`, transition: 'background 0.3s' }} />
         <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'queue' ? '#00d4ffbb' : '#00d4ff30'}, transparent)`, transition: 'background 0.3s' }} />
       </div>
 
@@ -75,7 +77,7 @@ export default function BottomNav() {
               style={active ? { background: `${color}12`, boxShadow: `0 0 14px 2px ${color}22` } : {}}
             >
               <div className="relative">
-                {tab.icon(active)}
+                {tab.icon(active, color)}
                 {tab.id === 'queue' && queue.length > 0 && (
                   <span
                     className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white"

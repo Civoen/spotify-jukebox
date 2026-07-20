@@ -1,5 +1,6 @@
 'use client'
 
+import { AnimatePresence, motion } from 'framer-motion'
 import { useJukeboxStore } from '@/lib/store'
 import HomeView from './HomeView'
 import ModernHomeView from './ModernHomeView'
@@ -18,13 +19,27 @@ export default function JukeboxMain() {
   const uiTheme = useJukeboxStore((s) => s.uiTheme)
 
   return (
-    <div className="h-full flex flex-col retro-bg overflow-hidden">
+    <div className={`h-full flex flex-col overflow-hidden ${uiTheme === 'modern' ? 'modern-bg' : 'retro-bg'}`} style={{ transition: 'background 0.4s ease' }}>
       {/* Spotify Web Playback SDK (hidden) */}
       <SpotifyPlayer />
 
       {/* Main content area */}
       <div className="flex-1 overflow-hidden relative">
-        {activeView === 'home' && (uiTheme === 'modern' ? <ModernHomeView /> : <HomeView />)}
+        {/* Home view crossfades between Standard and Modern when Switch Design is clicked */}
+        <AnimatePresence mode="wait">
+          {activeView === 'home' && (
+            <motion.div
+              key={uiTheme}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
+              className="absolute inset-0"
+            >
+              {uiTheme === 'modern' ? <ModernHomeView /> : <HomeView />}
+            </motion.div>
+          )}
+        </AnimatePresence>
         {activeView === 'search' && <SearchView />}
         {activeView === 'queue' && <QueueView />}
         {activeView === 'artist' && <ArtistView />}

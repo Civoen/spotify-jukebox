@@ -47,7 +47,12 @@ export default function SearchView() {
     deviceId,
     currentTrack,
     addManyToQueue,
+    uiTheme,
   } = useJukeboxStore()
+
+  // Modern theme uses pink instead of the Standard theme's gold accent
+  const accentRGB = uiTheme === 'modern' ? '255,45,120' : '201,162,39'
+  const accentText = uiTheme === 'modern' ? '#fff' : 'var(--retro-cream)'
 
   const [searchError, setSearchError] = useState<string | null>(null)
   const [artistResults, setArtistResults] = useState<SpotifyArtist[]>([])
@@ -137,11 +142,11 @@ export default function SearchView() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Gold search bar */}
+      {/* Themed search bar — gold for Standard, pink for Modern */}
       <div className="flex-shrink-0 px-4 pt-4 pb-3 flex items-center gap-3">
         <div className="flex-1 flex items-center gap-3 rounded-xl px-4 h-[72px] border-2"
-          style={{ background: 'rgba(201,162,39,0.10)', borderColor: 'rgba(201,162,39,0.75)', boxShadow: '0 0 24px rgba(201,162,39,0.20), inset 0 0 12px rgba(201,162,39,0.04)' }}>
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" className="flex-shrink-0" style={{ color: 'rgba(201,162,39,0.6)' }}>
+          style={{ background: `rgba(${accentRGB},0.10)`, borderColor: `rgba(${accentRGB},0.75)`, boxShadow: `0 0 24px rgba(${accentRGB},0.20), inset 0 0 12px rgba(${accentRGB},0.04)` }}>
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" className="flex-shrink-0" style={{ color: `rgba(${accentRGB},0.6)` }}>
             <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
@@ -162,10 +167,10 @@ export default function SearchView() {
             placeholder="Search songs, artists, albums…"
             inputMode="none"
             className="flex-1 bg-transparent placeholder-white/30 text-base outline-none"
-            style={{ color: 'var(--retro-cream)' }}
+            style={{ color: accentText }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="p-1" style={{ color: 'rgba(201,162,39,0.5)' }}>
+            <button onClick={() => setSearchQuery('')} className="p-1" style={{ color: `rgba(${accentRGB},0.5)` }}>
               <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                 <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
@@ -188,10 +193,10 @@ export default function SearchView() {
                 onClick={() => setFilter(id)}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-95"
                 style={{
-                  background: active ? 'rgba(201,162,39,0.22)' : 'rgba(201,162,39,0.07)',
-                  border: active ? '1px solid rgba(201,162,39,0.7)' : '1px solid rgba(201,162,39,0.2)',
-                  color: active ? 'rgba(201,162,39,1)' : 'rgba(201,162,39,0.55)',
-                  boxShadow: active ? '0 0 10px rgba(201,162,39,0.15)' : 'none',
+                  background: active ? `rgba(${accentRGB},0.22)` : `rgba(${accentRGB},0.07)`,
+                  border: active ? `1px solid rgba(${accentRGB},0.7)` : `1px solid rgba(${accentRGB},0.2)`,
+                  color: active ? `rgba(${accentRGB},1)` : `rgba(${accentRGB},0.55)`,
+                  boxShadow: active ? `0 0 10px rgba(${accentRGB},0.15)` : 'none',
                 }}
               >
                 {label}
