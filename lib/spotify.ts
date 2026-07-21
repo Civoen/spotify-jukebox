@@ -283,11 +283,29 @@ export async function searchGenreSongs(
     } catch {}
   }
 
-  const data = await spotifyFetch<{ tracks: { items: SpotifyTrack[] } }>(
-    `/search?q=${encodeURIComponent(`genre:"${genre}"`)}&type=track&limit=${limit}&market=from_token`,
-    token
-  )
-  const results = data.tracks.items.filter(Boolean)
+  // Spotify's genre tags are lowercase and space-separated (e.g. "hip hop", not
+  // "Hip-Hop"), so normalize before using the exact-match genre: filter.
+  const normalized = genre.toLowerCase().replace(/-/g, ' ')
+
+  let results: SpotifyTrack[] = []
+  try {
+    const data = await spotifyFetch<{ tracks: { items: SpotifyTrack[] } }>(
+      `/search?q=${encodeURIComponent(`genre:"${normalized}"`)}&type=track&limit=${limit}`,
+      token
+    )
+    results = data.tracks.items.filter(Boolean)
+  } catch {}
+
+  // The genre: filter only matches Spotify's exact internal tag spelling, so it
+  // can come back empty for labels that don't line up perfectly. Fall back to a
+  // plain keyword search so the button still does something sensible either way.
+  if (results.length === 0) {
+    const fallback = await spotifyFetch<{ tracks: { items: SpotifyTrack[] } }>(
+      `/search?q=${encodeURIComponent(genre)}&type=track&limit=${limit}`,
+      token
+    )
+    results = fallback.tracks.items.filter(Boolean)
+  }
 
   if (typeof window !== 'undefined' && results.length > 0) {
     try {
