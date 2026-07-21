@@ -279,7 +279,7 @@ export default function ModernHomeView() {
         <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
       </div>
 
-      {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions ── */}
+      {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions, with the title between them like Standard ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1048, margin: '0 auto', padding: '24px 16px' }}>
         <button
           onClick={() => setUiTheme('retro')}
@@ -288,24 +288,21 @@ export default function ModernHomeView() {
         >
           <SwitchDesignIcon />
         </button>
-        <div />
+        <div style={{ textAlign: 'center', lineHeight: 1 }}>
+          <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
+          <h1 style={{
+            fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
+            textShadow: '0 0 14px rgba(255,45,120,0.55), 0 0 40px rgba(255,45,120,0.3)',
+          }}>
+            The Outside Inn Jukebox
+          </h1>
+        </div>
         <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(255,255,255,0.4)', padding: 8 }}>
           <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
             <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
             <path d="M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-      </div>
-
-      {/* ── Title — same size as the Standard theme's title ── */}
-      <div style={{ flexShrink: 0, textAlign: 'center', width: '100%', maxWidth: 1048, margin: '0 auto', padding: '0 16px 4px' }}>
-        <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
-        <h1 style={{
-          fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
-          textShadow: '0 0 14px rgba(255,45,120,0.55), 0 0 40px rgba(255,45,120,0.3)',
-        }}>
-          The Outside Inn Jukebox
-        </h1>
       </div>
 
       {/* ── Waveform hero ── */}

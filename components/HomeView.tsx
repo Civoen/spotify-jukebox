@@ -30,8 +30,8 @@ function JukeboxLogo() {
           fontWeight: 900,
           letterSpacing: '-0.01em',
           lineHeight: 1.05,
-          color: '#ff5fa0',
-          textShadow: '0 0 6px #ff2d78, 0 0 16px #ff2d78, 0 0 34px #ff2d78',
+          color: '#CEC29B',
+          textShadow: '0 0 6px #CEC29B, 0 0 16px #CEC29B, 0 0 34px #CEC29B',
         }}
       >
         The Outside Inn
