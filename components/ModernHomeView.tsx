@@ -61,7 +61,7 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
 
   return (
     <div style={{
-      maxWidth: 1048, margin: '4px auto 20px', borderRadius: 28, overflow: 'hidden',
+      width: '100%', maxWidth: 1048, margin: '4px auto 20px', borderRadius: 28, overflow: 'hidden',
       position: 'relative', height: 260, flexShrink: 0,
       border: '1px solid rgba(255,255,255,0.09)',
       boxShadow: '0 0 40px rgba(255,45,120,0.10), 0 14px 36px rgba(0,0,0,0.45)',
@@ -280,7 +280,7 @@ export default function ModernHomeView() {
       </div>
 
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', maxWidth: 1048, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1048, margin: '0 auto', padding: '24px 16px' }}>
         <button
           onClick={() => setUiTheme('retro')}
           aria-label="Switch to Standard design"
@@ -298,7 +298,7 @@ export default function ModernHomeView() {
       </div>
 
       {/* ── Title — same size as the Standard theme's title ── */}
-      <div style={{ flexShrink: 0, textAlign: 'center', maxWidth: 1048, margin: '0 auto', padding: '0 16px 4px' }}>
+      <div style={{ flexShrink: 0, textAlign: 'center', width: '100%', maxWidth: 1048, margin: '0 auto', padding: '0 16px 4px' }}>
         <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
         <h1 style={{
           fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
@@ -461,7 +461,7 @@ export default function ModernHomeView() {
         </div>
 
         {/* Most Popular + Recently Played */}
-        <div style={{ padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ width: '100%', padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
           <div style={{ ...glassPanel('rgba(255,180,84,0.08)'), padding: 24 }}>
 
             {mostPopular.length > 0 && (
