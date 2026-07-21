@@ -519,16 +519,16 @@ export default function HomeView() {
                         const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
                         return (
                           <button key={i} onClick={() => handleInlineSelect(entry)}
-                            className="hover:bg-white/5 transition-colors"
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', width: '100%', textAlign: 'left', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(201,162,39,0.1)' : 'none' }}>
-                            <div style={{ width: 40, height: 40, borderRadius: isArtist ? '50%' : 6, overflow: 'hidden', flexShrink: 0, background: 'rgba(201,162,39,0.1)' }}>
+                            className="hover:bg-[rgba(201,162,39,0.14)] active:scale-[0.98] transition-all duration-150"
+                            style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', textAlign: 'left', background: 'rgba(201,162,39,0.05)', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(201,162,39,0.16)' : 'none' }}>
+                            <div style={{ width: 48, height: 48, borderRadius: isArtist ? '50%' : 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(201,162,39,0.12)', border: '1px solid rgba(201,162,39,0.3)', boxShadow: '0 0 10px rgba(201,162,39,0.15)' }}>
                               {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--retro-cream)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</p>
-                              <p style={{ fontSize: 12, color: 'var(--retro-muted)', marginTop: 1 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
+                              <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--retro-cream)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</p>
+                              <p style={{ fontSize: 13, color: 'rgba(201,162,39,0.85)', marginTop: 2 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
                             </div>
-                            <span style={{ fontSize: 11, color: 'rgba(201,162,39,0.4)', fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0 }}>{entry.type}</span>
+                            <span style={{ fontSize: 11, color: 'rgba(201,162,39,0.7)', fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0, padding: '3px 8px', borderRadius: 20, border: '1px solid rgba(201,162,39,0.3)' }}>{entry.type}</span>
                           </button>
                         )
                       })}
@@ -655,24 +655,6 @@ export default function HomeView() {
             )
           })()}
 
-          {playHistory.length > 0 && (
-          <div style={{ padding: `12px ${pad} 14px` }}>
-            <p className="font-typewriter" style={{ fontSize: 13, textTransform: 'uppercase', marginBottom: 14, color: 'var(--retro-muted)', letterSpacing: '0.08em' }}>Recently Played</p>
-              <div className="scrollbar-none" style={{ display: 'flex', gap: 14, overflowX: 'auto', margin: `0 ${negPad}`, padding: `0 ${pad} 8px` }}>
-                {playHistory.map(track => (
-                  <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else useJukeboxStore.getState().addToQueue(track) }}
-                    style={{ flexShrink: 0, width: 150, textAlign: 'left' }} className="active:scale-95 transition-transform">
-                    <div style={{ width: 150, height: 150, borderRadius: 10, overflow: 'hidden', marginBottom: 8, background: 'rgba(201,162,39,0.08)', border: '1px solid rgba(201,162,39,0.18)' }}>
-                      {track.album.images[0]?.url ? <img src={track.album.images[0].url} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="36" height="36" viewBox="0 0 28 28" fill="none" style={{ opacity: 0.2, color: 'var(--retro-gold)' }}><circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="1.5" /><circle cx="14" cy="14" r="3" stroke="currentColor" strokeWidth="1.5" /></svg></div>}
-                    </div>
-                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--retro-cream)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
-                    <p style={{ fontSize: 13, color: 'var(--retro-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
-                  </button>
-                ))}
-              </div>
-          </div>
-          )}
-
           {/* Genre buttons */}
           {(() => {
             const HOME_GENRES = GENRES.filter(g => ['Pop','Rock','Dance','Electronic','Metal'].includes(g.label))
@@ -721,6 +703,24 @@ export default function HomeView() {
               </div>
             )
           })()}
+
+          {playHistory.length > 0 && (
+          <div style={{ padding: `12px ${pad} 14px` }}>
+            <p className="font-typewriter" style={{ fontSize: 13, textTransform: 'uppercase', marginBottom: 14, color: 'var(--retro-muted)', letterSpacing: '0.08em' }}>Recently Played</p>
+              <div className="scrollbar-none" style={{ display: 'flex', gap: 14, overflowX: 'auto', margin: `0 ${negPad}`, padding: `0 ${pad} 8px` }}>
+                {playHistory.map(track => (
+                  <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else useJukeboxStore.getState().addToQueue(track) }}
+                    style={{ flexShrink: 0, width: 150, textAlign: 'left' }} className="active:scale-95 transition-transform">
+                    <div style={{ width: 150, height: 150, borderRadius: 10, overflow: 'hidden', marginBottom: 8, background: 'rgba(201,162,39,0.08)', border: '1px solid rgba(201,162,39,0.18)' }}>
+                      {track.album.images[0]?.url ? <img src={track.album.images[0].url} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="36" height="36" viewBox="0 0 28 28" fill="none" style={{ opacity: 0.2, color: 'var(--retro-gold)' }}><circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="1.5" /><circle cx="14" cy="14" r="3" stroke="currentColor" strokeWidth="1.5" /></svg></div>}
+                    </div>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--retro-cream)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
+                    <p style={{ fontSize: 13, color: 'var(--retro-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
+                  </button>
+                ))}
+              </div>
+          </div>
+          )}
 
             </div>{/* end scrollable */}
           </div>{/* end body */}

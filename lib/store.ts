@@ -32,6 +32,8 @@ interface JukeboxState {
   addToQueue: (track: SpotifyTrack) => void
   addManyToQueue: (tracks: SpotifyTrack[]) => void
   removeFromQueue: (queueId: string) => void
+  removeFromContextQueue: (queueId: string) => void
+  bumpFromContextToQueue: (queueId: string) => void
   reorderQueue: (fromIndex: number, toIndex: number) => void
   importQueue: (tracks: SpotifyTrack[]) => void
   setContextQueue: (tracks: SpotifyTrack[]) => void
@@ -134,6 +136,19 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
   },
   removeFromQueue: (queueId) =>
     set((s) => ({ queue: s.queue.filter((t) => t.queueId !== queueId) })),
+  removeFromContextQueue: (queueId) =>
+    set((s) => ({ contextQueue: s.contextQueue.filter((t) => t.queueId !== queueId) })),
+  bumpFromContextToQueue: (queueId) => {
+    // "Play this next" from the fallback playlist — moves the track into the
+    // priority queue (at the very front) and removes it from the fallback list
+    const { contextQueue, queue } = get()
+    const track = contextQueue.find((t) => t.queueId === queueId)
+    if (!track) return
+    set({
+      contextQueue: contextQueue.filter((t) => t.queueId !== queueId),
+      queue: [track, ...queue],
+    })
+  },
   reorderQueue: (fromIndex, toIndex) => {
     const { queue } = get()
     const newQueue = [...queue]

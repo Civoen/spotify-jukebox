@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import {
-  clearToken, formatDuration, searchDecadeSongs, searchGenreSongs, searchAll,
+  clearToken, formatDuration, searchDecadeSongs, searchGenreSongs, searchAll, getArtistsByIds,
   previousTrack as prevTrackApi, findOrCreateJukeboxPlaylist, addTrackToJukeboxPlaylist,
   playTrack, getAlbumArt,
   type SpotifyTrack, type SpotifyArtist, type SpotifyAlbum,
@@ -27,14 +27,14 @@ function SwitchDesignIcon() {
   )
 }
 
-// Sleek glass-panel style shared by the three panels + bottom panel —
-// a soft ambient glow instead of a hard neon outline.
-function glassPanel(glowColor: string) {
+// Sleek glass-panel style shared by every box in the Modern view — a
+// glowing neon-pink outline instead of a plain hairline border.
+function glassPanel() {
   return {
     borderRadius: 20,
     background: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
-    border: '1px solid rgba(255,255,255,0.09)',
-    boxShadow: `0 0 32px ${glowColor}, inset 0 1px 0 rgba(255,255,255,0.05)`,
+    border: '1px solid rgba(255,45,120,0.55)',
+    boxShadow: '0 0 3px rgba(255,45,120,0.7), 0 0 18px rgba(255,45,120,0.35), 0 0 40px rgba(255,45,120,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
   } as React.CSSProperties
 }
 
@@ -63,8 +63,8 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
     <div style={{
       width: '100%', maxWidth: 1048, margin: '4px auto 20px', borderRadius: 28, overflow: 'hidden',
       position: 'relative', height: 260, flexShrink: 0,
-      border: '1px solid rgba(255,255,255,0.09)',
-      boxShadow: '0 0 40px rgba(255,45,120,0.10), 0 14px 36px rgba(0,0,0,0.45)',
+      border: '1px solid rgba(255,45,120,0.55)',
+      boxShadow: '0 0 3px rgba(255,45,120,0.7), 0 0 18px rgba(255,45,120,0.35), 0 0 40px rgba(255,45,120,0.15)',
     }}>
       {art ? (
         <img src={art} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(50px) brightness(0.45) saturate(1.5)', transform: 'scale(1.3)' }} />
@@ -265,8 +265,38 @@ export default function ModernHomeView() {
 
   const mostPopular = Object.values(popularity)
     .sort((a, b) => b.count - a.count)
-    .slice(0, 8)
+    .slice(0, 6)
     .map(p => p.track)
+
+  // Aggregate play counts by artist (primary artist of each played track),
+  // so "Popular Artists" reflects who's actually been played most on this jukebox.
+  const topArtistIds = useMemo(() => {
+    const counts: Record<string, { id: string; name: string; count: number }> = {}
+    for (const { track, count } of Object.values(popularity)) {
+      const artist = track.artists[0]
+      if (!artist) continue
+      if (!counts[artist.id]) counts[artist.id] = { id: artist.id, name: artist.name, count: 0 }
+      counts[artist.id].count += count
+    }
+    return Object.values(counts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
+      .map(a => a.id)
+  }, [popularity])
+
+  const [popularArtists, setPopularArtists] = useState<SpotifyArtist[]>([])
+  useEffect(() => {
+    if (!accessToken || topArtistIds.length === 0) { setPopularArtists([]); return }
+    let cancelled = false
+    getArtistsByIds(topArtistIds, accessToken).then((artists) => {
+      if (!cancelled) {
+        // Preserve the popularity ranking order (the API doesn't guarantee it)
+        const byId = new Map(artists.map(a => [a.id, a]))
+        setPopularArtists(topArtistIds.map(id => byId.get(id)).filter((a): a is SpotifyArtist => !!a))
+      }
+    }).catch(() => setPopularArtists([]))
+    return () => { cancelled = true }
+  }, [topArtistIds.join(','), accessToken])
 
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ color: 'var(--retro-cream)', background: 'radial-gradient(ellipse at 50% 0%, rgba(80,20,60,0.15) 0%, transparent 55%), #08060a' }}>
@@ -313,7 +343,7 @@ export default function ModernHomeView() {
         <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: '18px 16px 24px' }}>
 
           {/* Genres panel */}
-          <div style={{ ...glassPanel('rgba(255,45,120,0.10)'), padding: '20px 0' }}>
+          <div style={{ ...glassPanel(), padding: '20px 0' }}>
             <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ff6bb0', marginBottom: 10 }}>GENRES</p>
             {MODERN_GENRES.map((g, i) => {
               const isLoading = loadingGenre === g.label
@@ -331,7 +361,7 @@ export default function ModernHomeView() {
           </div>
 
           {/* Now Playing panel */}
-          <div style={{ ...glassPanel('rgba(255,255,255,0.04)'), padding: '22px 24px' }}>
+          <div style={{ ...glassPanel(), padding: '22px 24px' }}>
             <p style={{ textAlign: 'center', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16, fontWeight: 600 }}>Now Playing</p>
 
             <div style={{ width: 190, height: 190, margin: '0 auto 16px', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -421,15 +451,16 @@ export default function ModernHomeView() {
                     const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
                     const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
                     return (
-                      <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-white/5 transition-colors"
-                        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', width: '100%', textAlign: 'left', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                        <div style={{ width: 38, height: 38, borderRadius: isArtist ? '50%' : 6, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.06)' }}>
+                      <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(255,45,120,0.14)] active:scale-[0.98] transition-all duration-150"
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', textAlign: 'left', background: 'rgba(255,45,120,0.05)', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(255,45,120,0.16)' : 'none' }}>
+                        <div style={{ width: 48, height: 48, borderRadius: isArtist ? '50%' : 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,45,120,0.1)', border: '1px solid rgba(255,45,120,0.35)', boxShadow: '0 0 10px rgba(255,45,120,0.2)' }}>
                           {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 14, fontWeight: 500, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
+                          <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                          <p style={{ fontSize: 13, color: '#ff8fc4', marginTop: 2 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
                         </div>
+                        <span style={{ fontSize: 11, color: '#ff8fc4', fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0, padding: '3px 8px', borderRadius: 20, border: '1px solid rgba(255,45,120,0.35)' }}>{entry.type}</span>
                       </button>
                     )
                   })}
@@ -439,7 +470,7 @@ export default function ModernHomeView() {
           </div>
 
           {/* Decades panel */}
-          <div style={{ ...glassPanel('rgba(0,212,255,0.10)'), padding: '20px 0' }}>
+          <div style={{ ...glassPanel(), padding: '20px 0' }}>
             <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#4ee0ff', marginBottom: 10 }}>DECADES</p>
             {DECADES.map((dec, i) => {
               const isLoading = loadingDecade === dec
@@ -459,12 +490,12 @@ export default function ModernHomeView() {
 
         {/* Most Popular + Recently Played */}
         <div style={{ width: '100%', padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ ...glassPanel('rgba(255,180,84,0.08)'), padding: 24 }}>
+          <div style={{ ...glassPanel(), padding: 24 }}>
 
             {mostPopular.length > 0 && (
               <div style={{ marginBottom: 26 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffb454', marginBottom: 14 }}>Most Popular</p>
-                <div className="scrollbar-none" style={{ display: 'flex', gap: 14, overflowX: 'auto' }}>
+                <div style={{ display: 'flex', gap: 14, overflow: 'hidden' }}>
                   {mostPopular.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
                       style={{ flexShrink: 0, width: 128, textAlign: 'left' }} className="active:scale-95 transition-transform">
@@ -473,6 +504,27 @@ export default function ModernHomeView() {
                       </div>
                       <p style={{ fontSize: 13, fontWeight: 500, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
                       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {popularArtists.length > 0 && (
+              <div style={{ marginBottom: 26 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4ee0ff', marginBottom: 14 }}>Popular Artists</p>
+                <div style={{ display: 'flex', gap: 18, overflow: 'hidden' }}>
+                  {popularArtists.map(artist => (
+                    <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
+                      style={{ flexShrink: 0, width: 100, textAlign: 'center' }} className="active:scale-95 transition-transform">
+                      <div style={{ width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', marginBottom: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,45,120,0.35)', boxShadow: '0 0 14px rgba(255,45,120,0.2)' }}>
+                        {artist.images?.[0]?.url
+                          ? <img src={artist.images[0].url} alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.25, color: '#fff' }}><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" /><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="1.5" /></svg>
+                            </div>}
+                      </div>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artist.name}</p>
                     </button>
                   ))}
                 </div>
@@ -497,7 +549,7 @@ export default function ModernHomeView() {
               </div>
             )}
 
-            {mostPopular.length === 0 && playHistory.length === 0 && (
+            {mostPopular.length === 0 && popularArtists.length === 0 && playHistory.length === 0 && (
               <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(255,255,255,0.35)', padding: '20px 0' }}>
                 Play a few songs and they'll show up here.
               </p>

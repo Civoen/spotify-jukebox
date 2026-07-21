@@ -2,12 +2,12 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { useJukeboxStore } from '@/lib/store'
-import { playTrack } from '@/lib/spotify'
+import { playTrack, formatDuration } from '@/lib/spotify'
 import { globalPlayer } from './SpotifyPlayer'
 import TrackRow from './TrackRow'
 
 export default function QueueView() {
-  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist } = useJukeboxStore()
+  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue } = useJukeboxStore()
 
   const dragFromIndex = useRef<number | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
@@ -183,7 +183,7 @@ export default function QueueView() {
               {queue.length > 0 ? 'Then playing from your playlist' : 'Playing from your playlist'}
             </p>
             {contextQueue.map((track) => (
-              <div key={track.queueId} className="flex items-center gap-3 p-3 rounded-xl opacity-70">
+              <div key={track.queueId} className="flex items-center gap-3 p-3 rounded-xl opacity-70 hover:opacity-100 transition-opacity">
                 <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
                   {track.album.images?.[track.album.images.length - 1]?.url && (
                     <img src={track.album.images[track.album.images.length - 1].url} alt="" className="w-full h-full object-cover" />
@@ -192,6 +192,29 @@ export default function QueueView() {
                 <div className="flex-1 min-w-0">
                   <p className="text-white/80 text-sm font-medium truncate">{track.name}</p>
                   <p className="text-white/30 text-xs truncate">{track.artists.map(a => a.name).join(', ')}</p>
+                </div>
+                <span className="text-white/30 text-xs flex-shrink-0">{formatDuration(track.duration_ms)}</span>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => bumpFromContextToQueue(track.queueId)}
+                    aria-label="Play next"
+                    className="w-11 h-11 rounded-full flex items-center justify-center
+                      text-white/30 hover:text-pink-400 hover:bg-pink-400/10 transition-all duration-150"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                      <path d="M7 11V3M3 6.5L7 2.5L11 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => removeFromContextQueue(track.queueId)}
+                    aria-label="Remove from playlist"
+                    className="w-11 h-11 rounded-full flex items-center justify-center
+                      text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all duration-150"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                      <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             ))}
