@@ -58,11 +58,10 @@ const BAR_COUNT = 72
 function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; isPlaying: boolean; progress: number }) {
   const bars = useMemo(() => seededBars(track?.id ?? 'idle', BAR_COUNT), [track?.id])
   const art = track?.album.images?.[0]?.url
-  const pad = 'max(16px, calc(50% - 432px))'
 
   return (
     <div style={{
-      margin: `4px ${pad} 20px`, borderRadius: 28, overflow: 'hidden',
+      maxWidth: 1048, margin: '4px auto 20px', borderRadius: 28, overflow: 'hidden',
       position: 'relative', height: 260, flexShrink: 0,
       border: '1px solid rgba(255,255,255,0.09)',
       boxShadow: '0 0 40px rgba(255,45,120,0.10), 0 14px 36px rgba(0,0,0,0.45)',
@@ -269,8 +268,6 @@ export default function ModernHomeView() {
     .slice(0, 8)
     .map(p => p.track)
 
-  const pad = 'max(16px, calc(50% - 432px))'
-
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ color: 'var(--retro-cream)', background: 'radial-gradient(ellipse at 50% 0%, rgba(80,20,60,0.15) 0%, transparent 55%), #08060a' }}>
 
@@ -283,7 +280,7 @@ export default function ModernHomeView() {
       </div>
 
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', maxWidth: 1048, margin: '0 auto', padding: '24px 16px' }}>
         <button
           onClick={() => setUiTheme('retro')}
           aria-label="Switch to Standard design"
@@ -301,7 +298,7 @@ export default function ModernHomeView() {
       </div>
 
       {/* ── Title — same size as the Standard theme's title ── */}
-      <div style={{ flexShrink: 0, textAlign: 'center', padding: `0 ${pad} 4px` }}>
+      <div style={{ flexShrink: 0, textAlign: 'center', maxWidth: 1048, margin: '0 auto', padding: '0 16px 4px' }}>
         <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
         <h1 style={{
           fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
@@ -316,7 +313,7 @@ export default function ModernHomeView() {
 
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
 
-        <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: `18px ${pad} 24px` }}>
+        <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: '18px 16px 24px' }}>
 
           {/* Genres panel */}
           <div style={{ ...glassPanel('rgba(255,45,120,0.10)'), padding: '20px 0' }}>
@@ -464,7 +461,7 @@ export default function ModernHomeView() {
         </div>
 
         {/* Most Popular + Recently Played */}
-        <div style={{ padding: `0 ${pad} 24px`, maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
           <div style={{ ...glassPanel('rgba(255,180,84,0.08)'), padding: 24 }}>
 
             {mostPopular.length > 0 && (
