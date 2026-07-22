@@ -13,9 +13,9 @@ import { GENRES } from '@/lib/genres'
 import { globalPlayer } from './SpotifyPlayer'
 
 const MODERN_GENRES = GENRES.filter(g =>
-  ['Pop', 'Rock', 'Hip-Hop', 'R&B', 'Dance', 'Electronic', 'Jazz', 'Metal'].includes(g.label)
+  ['Pop', 'Rock', 'Hip-Hop', 'R&B', 'Dance', 'Electronic', 'Metal'].includes(g.label)
 )
-const DECADES = ['60s', '70s', '80s', '90s', '00s'] as const
+const DECADES = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'] as const
 
 /* ─── Switch design icon — two curved arrows, sits where Insert Coin used to be ─── */
 function SwitchDesignIcon() {
