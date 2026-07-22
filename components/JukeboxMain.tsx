@@ -13,10 +13,12 @@ import BottomPlayer from './BottomPlayer'
 import BottomNav from './BottomNav'
 import SpotifyPlayer from './SpotifyPlayer'
 import OnScreenKeyboard from './OnScreenKeyboard'
+import FullscreenPlayer from './FullscreenPlayer'
 
 export default function JukeboxMain() {
   const activeView = useJukeboxStore((s) => s.activeView)
   const uiTheme = useJukeboxStore((s) => s.uiTheme)
+  const fullscreenOpen = useJukeboxStore((s) => s.fullscreenOpen)
 
   return (
     <div className={`h-full flex flex-col overflow-hidden ${uiTheme === 'modern' ? 'modern-bg' : 'retro-bg'}`} style={{ transition: 'background 0.4s ease' }}>
@@ -52,6 +54,20 @@ export default function JukeboxMain() {
 
       {/* On-screen keyboard */}
       <OnScreenKeyboard />
+
+      {/* Fullscreen Now Playing — opened by tapping the vinyl / album art */}
+      <AnimatePresence>
+        {fullscreenOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          >
+            <FullscreenPlayer />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

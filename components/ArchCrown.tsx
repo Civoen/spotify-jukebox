@@ -6,8 +6,8 @@ export const chrome = 'linear-gradient(180deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 
 export const chromeH = 'linear-gradient(90deg, #e8d5b0 0%, #c9a460 20%, #f5e8c0 50%, #b8902a 80%, #e0c878 100%)'
 
 /* ─── Arch crown — the glowing dome + spinning vinyl, shared by every theme ─── */
-export function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vinylScale = 1 }: {
-  albumArt?: string; isPlaying: boolean; vinylSize?: number; topPad?: number; vinylScale?: number
+export function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vinylScale = 1, onVinylClick }: {
+  albumArt?: string; isPlaying: boolean; vinylSize?: number; topPad?: number; vinylScale?: number; onVinylClick?: () => void
 }) {
   const vR = vinylSize / 2
   const vCenterY = topPad + vR
@@ -53,7 +53,10 @@ export function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vi
       <div style={ring(2, '#030100')} />
 
       {/* Vinyl */}
-      <div style={{ position: 'absolute', top: vinylTop, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+      <div
+        onClick={onVinylClick}
+        style={{ position: 'absolute', top: vinylTop, left: '50%', transform: 'translateX(-50%)', zIndex: 1, cursor: onVinylClick ? 'pointer' : 'default' }}
+      >
         <SpinningVinyl albumArt={albumArt} isPlaying={isPlaying} size={scaledVinylSize} />
       </div>
 

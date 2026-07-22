@@ -139,10 +139,22 @@ export async function getValidAccessToken(): Promise<string | null> {
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 async function spotifyFetch<T>(path: string, token: string, retries = 3, options: RequestInit = {}, delayMs = 1000): Promise<T> {
-  const res = await fetch(`${SPOTIFY_API_BASE}${path}`, {
-    ...options,
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers },
-  })
+  let res: Response
+  try {
+    res = await fetch(`${SPOTIFY_API_BASE}${path}`, {
+      ...options,
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers },
+    })
+  } catch (networkErr) {
+    // fetch() itself rejected — a genuine network-level failure (dropped wifi,
+    // DNS blip, etc.), not an HTTP error status. Retry a couple times before
+    // giving up, since these are usually transient.
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, delayMs))
+      return spotifyFetch(path, token, retries - 1, options, Math.min(delayMs * 2, 4000))
+    }
+    throw networkErr
+  }
 
   if (res.status === 429 && retries > 0) {
     const retryAfter = res.headers.get('Retry-After')

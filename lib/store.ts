@@ -86,6 +86,10 @@ interface JukeboxState {
   uiTheme: 'retro' | 'modern'
   setUiTheme: (theme: 'retro' | 'modern') => void
 
+  // Fullscreen "Now Playing" view — opened by tapping the vinyl/album art
+  fullscreenOpen: boolean
+  setFullscreenOpen: (v: boolean) => void
+
   // Popularity — tracks how many times each track has been played on this jukebox
   popularity: Record<string, { track: SpotifyTrack; count: number }>
   incrementPopularity: (track: SpotifyTrack) => void
@@ -245,6 +249,10 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
     }
     set({ uiTheme: theme })
   },
+
+  // Fullscreen "Now Playing" view
+  fullscreenOpen: false,
+  setFullscreenOpen: (v) => set({ fullscreenOpen: v }),
 
   // Popularity
   popularity: (() => {

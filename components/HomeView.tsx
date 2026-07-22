@@ -125,7 +125,7 @@ export default function HomeView() {
     accessToken, deviceId, setActiveView, setActivePlaylist, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, queue, contextQueue, skipNext, addToQueue,
     playHistory, addToHistory, incrementPopularity, setKeyboardVisible, setOnKeyPress,
-    volume, setVolume, setSearchQuery, setUiTheme,
+    volume, setVolume, setSearchQuery, setUiTheme, setFullscreenOpen,
   } = useJukeboxStore()
 
   const [loading, setLoading] = useState(true)
@@ -367,7 +367,7 @@ export default function HomeView() {
       <>
           {/* Arch — sits above the scrollable body, doesn't scroll */}
           <div style={{ flexShrink: 0, marginTop: -20 }}>
-            <ArchCrown albumArt={albumArt} isPlaying={isPlaying} vinylSize={880} topPad={100} vinylScale={0.9} />
+            <ArchCrown albumArt={albumArt} isPlaying={isPlaying} vinylSize={880} topPad={100} vinylScale={0.9} onVinylClick={() => setFullscreenOpen(true)} />
           </div>
           {/* Neon separator under arch — clipped to jukebox body width (500px from center each side) */}
           <div style={{ flexShrink: 0, margin: '0 max(0px, calc(50% - 500px))' }}>

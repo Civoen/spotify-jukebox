@@ -28,13 +28,14 @@ function SwitchDesignIcon() {
 }
 
 // Sleek glass-panel style shared by every box in the Modern view — a
-// glowing neon-pink outline instead of a plain hairline border.
-function glassPanel() {
+// glowing neon outline, brighter than before, colored per-box to form a
+// pink (left) → light blue (right) gradient across the whole layout.
+function glassPanel(color: string) {
   return {
     borderRadius: 20,
     background: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
-    border: '1px solid rgba(255,45,120,0.55)',
-    boxShadow: '0 0 3px rgba(255,45,120,0.7), 0 0 18px rgba(255,45,120,0.35), 0 0 40px rgba(255,45,120,0.15), inset 0 1px 0 rgba(255,255,255,0.05)',
+    border: `1.5px solid ${color}`,
+    boxShadow: `0 0 6px ${color}, 0 0 26px ${color}, 0 0 60px ${color}, 0 0 100px ${color}66, inset 0 1px 0 rgba(255,255,255,0.06)`,
   } as React.CSSProperties
 }
 
@@ -61,10 +62,13 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
 
   return (
     <div style={{
-      width: '100%', maxWidth: 1048, margin: '4px auto 20px', borderRadius: 28, overflow: 'hidden',
-      position: 'relative', height: 260, flexShrink: 0,
-      border: '1px solid rgba(255,45,120,0.55)',
-      boxShadow: '0 0 3px rgba(255,45,120,0.7), 0 0 18px rgba(255,45,120,0.35), 0 0 40px rgba(255,45,120,0.15)',
+      width: '100%', maxWidth: 1000, margin: '4px auto 20px', borderRadius: 30,
+      padding: 2, flexShrink: 0,
+      background: 'linear-gradient(to right, #ff2d78, #b450dc, #4ee0ff)',
+      boxShadow: '-10px 0 55px rgba(255,45,120,0.5), 10px 0 55px rgba(78,224,255,0.5), 0 0 35px rgba(255,255,255,0.1)',
+    }}>
+    <div style={{
+      width: '100%', height: 260, borderRadius: 28, overflow: 'hidden', position: 'relative',
     }}>
       {art ? (
         <img src={art} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(50px) brightness(0.45) saturate(1.5)', transform: 'scale(1.3)' }} />
@@ -93,6 +97,7 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
         })}
       </div>
     </div>
+    </div>
   )
 }
 
@@ -101,7 +106,7 @@ export default function ModernHomeView() {
     accessToken, deviceId, setActiveView, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, skipNext, addToQueue,
     playHistory, addToHistory, incrementPopularity, popularity,
-    setKeyboardVisible, setOnKeyPress, setUiTheme,
+    setKeyboardVisible, setOnKeyPress, setUiTheme, setFullscreenOpen,
   } = useJukeboxStore()
 
   const [loadingDecade, setLoadingDecade] = useState<string | null>(null)
@@ -288,14 +293,19 @@ export default function ModernHomeView() {
   useEffect(() => {
     if (!accessToken || topArtistIds.length === 0) { setPopularArtists([]); return }
     let cancelled = false
-    getArtistsByIds(topArtistIds, accessToken).then((artists) => {
-      if (!cancelled) {
-        // Preserve the popularity ranking order (the API doesn't guarantee it)
-        const byId = new Map(artists.map(a => [a.id, a]))
-        setPopularArtists(topArtistIds.map(id => byId.get(id)).filter((a): a is SpotifyArtist => !!a))
-      }
-    }).catch(() => setPopularArtists([]))
-    return () => { cancelled = true }
+    // Staggered like the queue-import in SpotifyPlayer.tsx — avoids firing at
+    // the exact same instant as other track-change-triggered API calls
+    // (history, popularity, playlist-add), which can collide and rate-limit.
+    const timer = setTimeout(() => {
+      getArtistsByIds(topArtistIds, accessToken).then((artists) => {
+        if (!cancelled) {
+          // Preserve the popularity ranking order (the API doesn't guarantee it)
+          const byId = new Map(artists.map(a => [a.id, a]))
+          setPopularArtists(topArtistIds.map(id => byId.get(id)).filter((a): a is SpotifyArtist => !!a))
+        }
+      }).catch(() => { if (!cancelled) setPopularArtists([]) })
+    }, 2500)
+    return () => { cancelled = true; clearTimeout(timer) }
   }, [topArtistIds.join(','), accessToken])
 
   return (
@@ -310,7 +320,7 @@ export default function ModernHomeView() {
       </div>
 
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions, with the title between them like Standard ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1048, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1000, margin: '0 auto', padding: '24px 16px' }}>
         <button
           onClick={() => setUiTheme('retro')}
           aria-label="Switch to Standard design"
@@ -343,28 +353,36 @@ export default function ModernHomeView() {
         <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: '18px 16px 24px' }}>
 
           {/* Genres panel */}
-          <div style={{ ...glassPanel(), padding: '20px 0' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ff6bb0', marginBottom: 10 }}>GENRES</p>
-            {MODERN_GENRES.map((g, i) => {
-              const isLoading = loadingGenre === g.label
-              return (
-                <button key={g.label} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '13px 22px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none', opacity: loadingGenre && !isLoading ? 0.4 : 1 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {isLoading && <span className="skeleton" style={{ width: 12, height: 12, borderRadius: '50%' }} />}
-                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)' }}>{g.label}</span>
-                  </span>
-                  <span style={{ color: '#ff6bb0', fontSize: 14 }}>›</span>
-                </button>
-              )
-            })}
+          <div style={{ ...glassPanel('rgba(255,45,120,0.65)'), padding: '20px 18px' }}>
+            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ff6bb0', marginBottom: 14 }}>GENRES</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {MODERN_GENRES.map((g) => {
+                const isLoading = loadingGenre === g.label
+                return (
+                  <button key={g.label} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre}
+                    className="active:scale-[0.97] transition-transform"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '15px 12px',
+                      borderRadius: 14, border: 'none',
+                      background: 'linear-gradient(135deg, #ff2d78, #ff6bb0)',
+                      boxShadow: '0 0 16px rgba(255,45,120,0.5)',
+                      opacity: loadingGenre && !isLoading ? 0.35 : 1,
+                      transition: 'opacity 0.2s',
+                    }}>
+                    {isLoading
+                      ? <span className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                      : <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{g.label}</span>}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Now Playing panel */}
-          <div style={{ ...glassPanel(), padding: '22px 24px' }}>
+          <div style={{ ...glassPanel('rgba(180,80,220,0.6)'), padding: '22px 24px' }}>
             <p style={{ textAlign: 'center', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16, fontWeight: 600 }}>Now Playing</p>
 
-            <div style={{ width: 190, height: 190, margin: '0 auto 16px', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div onClick={() => setFullscreenOpen(true)} style={{ width: 190, height: 190, margin: '0 auto 16px', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
               {albumArt
                 ? <img src={albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -470,31 +488,44 @@ export default function ModernHomeView() {
           </div>
 
           {/* Decades panel */}
-          <div style={{ ...glassPanel(), padding: '20px 0' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#4ee0ff', marginBottom: 10 }}>DECADES</p>
-            {DECADES.map((dec, i) => {
-              const isLoading = loadingDecade === dec
-              return (
-                <button key={dec} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '13px 22px', borderTop: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none', opacity: loadingDecade && !isLoading ? 0.4 : 1 }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {isLoading && <span className="skeleton" style={{ width: 12, height: 12, borderRadius: '50%' }} />}
-                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)' }}>'{dec}</span>
-                  </span>
-                  <span style={{ color: '#4ee0ff', fontSize: 14 }}>›</span>
-                </button>
-              )
-            })}
+          <div style={{ ...glassPanel('rgba(78,224,255,0.65)'), padding: '20px 18px' }}>
+            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#4ee0ff', marginBottom: 14 }}>DECADES</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {DECADES.map((dec) => {
+                const isLoading = loadingDecade === dec
+                return (
+                  <button key={dec} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade}
+                    className="active:scale-[0.97] transition-transform"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '15px 12px',
+                      borderRadius: 14, border: 'none',
+                      background: 'linear-gradient(135deg, #00d4ff, #4ee0ff)',
+                      boxShadow: '0 0 16px rgba(78,224,255,0.5)',
+                      opacity: loadingDecade && !isLoading ? 0.35 : 1,
+                      transition: 'opacity 0.2s',
+                    }}>
+                    {isLoading
+                      ? <span className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                      : <span style={{ fontSize: 15, fontWeight: 700, color: '#08262e' }}>'{dec}</span>}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
         {/* Most Popular + Recently Played */}
         <div style={{ width: '100%', padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ ...glassPanel(), padding: 24 }}>
+          <div style={{
+            borderRadius: 22, padding: 2,
+            background: 'linear-gradient(to right, #ff2d78, #b450dc, #4ee0ff)',
+            boxShadow: '-10px 0 55px rgba(255,45,120,0.4), 10px 0 55px rgba(78,224,255,0.4), 0 0 30px rgba(255,255,255,0.08)',
+          }}>
+          <div style={{ borderRadius: 20, background: 'linear-gradient(180deg, rgba(20,15,20,0.97), rgba(10,8,12,0.99))', padding: 24 }}>
 
             {mostPopular.length > 0 && (
               <div style={{ marginBottom: 26 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffb454', marginBottom: 14 }}>Most Popular</p>
+                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#ffb454', marginBottom: 14, textAlign: 'center' }}>Most Popular</p>
                 <div style={{ display: 'flex', gap: 14, overflow: 'hidden' }}>
                   {mostPopular.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
@@ -512,7 +543,7 @@ export default function ModernHomeView() {
 
             {popularArtists.length > 0 && (
               <div style={{ marginBottom: 26 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4ee0ff', marginBottom: 14 }}>Popular Artists</p>
+                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4ee0ff', marginBottom: 14, textAlign: 'center' }}>Popular Artists</p>
                 <div style={{ display: 'flex', gap: 18, overflow: 'hidden' }}>
                   {popularArtists.map(artist => (
                     <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
@@ -533,7 +564,7 @@ export default function ModernHomeView() {
 
             {playHistory.length > 0 && (
               <div>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', marginBottom: 14 }}>Recently Played</p>
+                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', marginBottom: 14, textAlign: 'center' }}>Recently Played</p>
                 <div className="scrollbar-none" style={{ display: 'flex', gap: 14, overflowX: 'auto' }}>
                   {playHistory.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
@@ -554,6 +585,7 @@ export default function ModernHomeView() {
                 Play a few songs and they'll show up here.
               </p>
             )}
+          </div>
           </div>
         </div>
       </div>
