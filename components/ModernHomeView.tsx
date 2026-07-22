@@ -362,16 +362,18 @@ export default function ModernHomeView() {
                   <button key={g.label} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre}
                     className="active:scale-[0.97] transition-transform"
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '15px 12px',
-                      borderRadius: 14, border: 'none',
-                      background: 'linear-gradient(135deg, #ff2d78, #ff6bb0)',
-                      boxShadow: '0 0 16px rgba(255,45,120,0.5)',
+                      position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '17px 12px',
+                      borderRadius: 16, border: 'none', overflow: 'hidden',
+                      background: 'linear-gradient(180deg, #ff9dc7 0%, #ff2d78 45%, #a30f4d 100%)',
+                      boxShadow: '0 0 18px rgba(255,45,120,0.55), inset 0 -2px 4px rgba(0,0,0,0.25)',
                       opacity: loadingGenre && !isLoading ? 0.35 : 1,
                       transition: 'opacity 0.2s',
                     }}>
+                    {/* glossy top highlight */}
+                    <span style={{ position: 'absolute', top: 2, left: 2, right: 2, height: '42%', borderRadius: '14px 14px 50% 50% / 14px 14px 100% 100%', background: 'rgba(255,255,255,0.35)', filter: 'blur(2px)', pointerEvents: 'none' }} />
                     {isLoading
-                      ? <span className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
-                      : <span style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{g.label}</span>}
+                      ? <span className="skeleton" style={{ width: 18, height: 18, borderRadius: '50%', position: 'relative' }} />
+                      : <span style={{ fontSize: 19, fontWeight: 800, color: 'white', position: 'relative', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{g.label}</span>}
                   </button>
                 )
               })}
@@ -391,8 +393,8 @@ export default function ModernHomeView() {
             </div>
 
             <div style={{ textAlign: 'center', marginBottom: 18 }}>
-              <h2 style={{ fontSize: 21, fontWeight: 700, color: '#fff' }}>{currentTrack?.name ?? 'No track playing'}</h2>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>
+              <h2 style={{ fontSize: 21, fontWeight: 700, color: '#fff', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack?.name ?? 'No track playing'}</h2>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginTop: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                 {currentTrack ? currentTrack.artists.map((a, i) => (
                   <span key={a.id}>{i > 0 && ' & '}<button onClick={() => { setActiveArtist({ id: a.id, name: a.name }); setActiveView('artist') }} className="hover:underline">{a.name}</button></span>
                 )) : 'Select a song below'}
@@ -497,16 +499,18 @@ export default function ModernHomeView() {
                   <button key={dec} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade}
                     className="active:scale-[0.97] transition-transform"
                     style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '15px 12px',
-                      borderRadius: 14, border: 'none',
-                      background: 'linear-gradient(135deg, #00d4ff, #4ee0ff)',
-                      boxShadow: '0 0 16px rgba(78,224,255,0.5)',
+                      position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '17px 12px',
+                      borderRadius: 16, border: 'none', overflow: 'hidden',
+                      background: 'linear-gradient(180deg, #bdf2ff 0%, #00d4ff 45%, #0a6a8a 100%)',
+                      boxShadow: '0 0 18px rgba(78,224,255,0.55), inset 0 -2px 4px rgba(0,0,0,0.2)',
                       opacity: loadingDecade && !isLoading ? 0.35 : 1,
                       transition: 'opacity 0.2s',
                     }}>
+                    {/* glossy top highlight */}
+                    <span style={{ position: 'absolute', top: 2, left: 2, right: 2, height: '42%', borderRadius: '14px 14px 50% 50% / 14px 14px 100% 100%', background: 'rgba(255,255,255,0.45)', filter: 'blur(2px)', pointerEvents: 'none' }} />
                     {isLoading
-                      ? <span className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
-                      : <span style={{ fontSize: 15, fontWeight: 700, color: '#08262e' }}>'{dec}</span>}
+                      ? <span className="skeleton" style={{ width: 18, height: 18, borderRadius: '50%', position: 'relative' }} />
+                      : <span style={{ fontSize: 19, fontWeight: 800, color: '#052430', position: 'relative' }}>'{dec}</span>}
                   </button>
                 )
               })}

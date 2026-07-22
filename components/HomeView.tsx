@@ -414,8 +414,8 @@ export default function HomeView() {
               <div style={{ textAlign: 'center', marginBottom: 14 }}>
                 {currentTrack ? (
                   <>
-                    <h2 className="font-retro" style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginBottom: 6, color: 'var(--retro-cream)' }}>{currentTrack.name}</h2>
-                    <p className="font-typewriter" style={{ fontSize: 17, color: 'var(--retro-gold)' }}>
+                    <h2 className="font-retro" style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginBottom: 6, color: 'var(--retro-cream)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack.name}</h2>
+                    <p className="font-typewriter" style={{ fontSize: 17, color: 'var(--retro-gold)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                       {currentTrack.artists.map((a, i) => (
                         <span key={a.id}>{i > 0 && ' & '}<button onClick={() => { setActiveArtist({ id: a.id, name: a.name }); setActiveView('artist') }} className="hover:underline transition-colors">{a.name}</button></span>
                       ))}

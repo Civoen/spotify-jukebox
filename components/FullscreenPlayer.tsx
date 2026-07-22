@@ -124,10 +124,10 @@ export default function FullscreenPlayer() {
             </div>}
       </div>
 
-      <h1 style={{ fontSize: 40, fontWeight: 700, color: '#fff', marginTop: 40, textAlign: 'center' }}>
+      <h1 style={{ fontSize: 40, fontWeight: 700, color: '#fff', marginTop: 40, textAlign: 'center', width: 'min(84vw, 640px)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
         {currentTrack?.name ?? 'No track playing'}
       </h1>
-      <p style={{ fontSize: 22, color: accentLight, marginTop: 10, textAlign: 'center', transition: 'color 0.6s ease' }}>
+      <p style={{ fontSize: 22, color: accentLight, marginTop: 10, textAlign: 'center', transition: 'color 0.6s ease', width: 'min(84vw, 640px)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
         {currentTrack?.artists.map(a => a.name).join(', ') ?? 'Select a song to get started'}
       </p>
 
