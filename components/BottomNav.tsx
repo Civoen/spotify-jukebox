@@ -47,9 +47,9 @@ export default function BottomNav() {
   // instead of the Standard theme's muted retro gold, so all three tabs
   // stay visually consistent with whichever design is active.
   const TAB_COLORS = {
-    home: '#ff2d78',
-    search: isModern ? '#ffb454' : '#c9a227',
-    queue: '#00d4ff',
+    home: isModern ? '#f0c14a' : '#ff2d78',
+    search: isModern ? '#f0c14a' : '#c9a227',
+    queue: isModern ? '#d4a017' : '#00d4ff',
   } as const
 
   return (

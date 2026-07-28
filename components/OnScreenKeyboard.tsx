@@ -95,7 +95,7 @@ export default function OnScreenKeyboard() {
 
   const isModern = uiTheme === 'modern'
   // Modern uses pink instead of the Standard theme's gold
-  const accentRGB = isModern ? '255,45,120' : '201,162,39'
+  const accentRGB = isModern ? '240,193,74' : '201,162,39'
 
   const rows = numMode ? NUM_ROWS : ALPHA_ROWS
 

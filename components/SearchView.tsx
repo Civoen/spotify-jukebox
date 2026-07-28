@@ -51,7 +51,7 @@ export default function SearchView() {
   } = useJukeboxStore()
 
   // Modern theme uses pink instead of the Standard theme's gold accent
-  const accentRGB = uiTheme === 'modern' ? '255,45,120' : '201,162,39'
+  const accentRGB = uiTheme === 'modern' ? '240,193,74' : '201,162,39'
   const accentText = uiTheme === 'modern' ? '#fff' : 'var(--retro-cream)'
 
   const [searchError, setSearchError] = useState<string | null>(null)

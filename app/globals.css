@@ -117,8 +117,8 @@ body {
 }
 .modern-bg {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(255,45,120,0.15) 0%, transparent 55%),
-    #08060a;
+    radial-gradient(ellipse at 50% 0%, rgba(240,193,74,0.15) 0%, transparent 55%),
+    #0a0805;
 }
 .retro-panel {
   background: var(--retro-panel);

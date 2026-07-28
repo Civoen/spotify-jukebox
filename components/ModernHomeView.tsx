@@ -28,14 +28,14 @@ function SwitchDesignIcon() {
 }
 
 // Sleek glass-panel style shared by every box in the Modern view — a
-// glowing neon outline, brighter than before, colored per-box to form a
-// pink (left) → light blue (right) gradient across the whole layout.
+// glowing, shiny gold outline forming a pale-gold to deep-amber gradient
+// across the whole layout.
 function glassPanel(color: string) {
   return {
     borderRadius: 20,
-    background: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015))',
+    background: 'linear-gradient(180deg, rgba(255,230,150,0.06), rgba(255,210,100,0.02))',
     border: `1.5px solid ${color}`,
-    boxShadow: `0 0 6px ${color}, 0 0 26px ${color}, 0 0 60px ${color}, 0 0 100px ${color}66, inset 0 1px 0 rgba(255,255,255,0.06)`,
+    boxShadow: `0 0 6px ${color}, 0 0 26px ${color}, 0 0 60px ${color}, 0 0 100px ${color}66, inset 0 1px 0 rgba(255,244,194,0.12)`,
   } as React.CSSProperties
 }
 
@@ -64,8 +64,8 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
     <div style={{
       width: '100%', maxWidth: 1000, margin: '4px auto 20px', borderRadius: 30,
       padding: 2, flexShrink: 0,
-      background: 'linear-gradient(to right, #ff2d78, #b450dc, #4ee0ff)',
-      boxShadow: '-10px 0 55px rgba(255,45,120,0.5), 10px 0 55px rgba(78,224,255,0.5), 0 0 35px rgba(255,255,255,0.1)',
+      background: 'linear-gradient(to right, #f0c14a, #e8b923, #d4a017)',
+      boxShadow: '-10px 0 55px rgba(240,193,74,0.5), 10px 0 55px rgba(212,160,23,0.5), 0 0 35px rgba(255,255,255,0.1)',
     }}>
     <div style={{
       width: '100%', height: 260, borderRadius: 28, overflow: 'hidden', position: 'relative',
@@ -73,7 +73,7 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
       {art ? (
         <img src={art} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(50px) brightness(0.45) saturate(1.5)', transform: 'scale(1.3)' }} />
       ) : (
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(255,45,120,0.22), transparent 60%), #0d0710' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(240,193,74,0.22), transparent 60%), #0d0710' }} />
       )}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(8,6,10,0.25) 0%, rgba(8,6,10,0.75) 75%, #08060a 100%)' }} />
 
@@ -88,8 +88,8 @@ function Waveform({ track, isPlaying, progress }: { track: SpotifyTrack | null; 
                 minWidth: 2,
                 height: `${h * 100}%`,
                 borderRadius: 3,
-                background: isPast ? 'linear-gradient(180deg, #ff8ac0, #ff2d78)' : 'rgba(255,255,255,0.14)',
-                boxShadow: isPast ? '0 0 10px rgba(255,45,120,0.45)' : 'none',
+                background: isPast ? 'linear-gradient(180deg, #ffe9a3, #f0c14a)' : 'rgba(255,255,255,0.14)',
+                boxShadow: isPast ? '0 0 10px rgba(240,193,74,0.45)' : 'none',
                 animation: isPlaying ? `equalizer ${0.55 + (i % 5) * 0.14}s ease-in-out ${(i % 9) * 0.07}s infinite` : 'none',
               }}
             />
@@ -312,11 +312,11 @@ export default function ModernHomeView() {
     <div className="h-full flex flex-col overflow-hidden" style={{ color: 'var(--retro-cream)', background: 'radial-gradient(ellipse at 50% 0%, rgba(80,20,60,0.15) 0%, transparent 55%), #08060a' }}>
 
       {/* ── Top bar — matches the Standard theme's height exactly, so the header/title land in the same vertical position on both views ── */}
-      <div style={{ height: 10, background: 'linear-gradient(90deg, #ff2d78 0%, #ff8fc4 25%, #ffffff 50%, #4ee0ff 75%, #00d4ff 100%)', opacity: 0.8, flexShrink: 0 }} />
+      <div style={{ height: 10, background: 'linear-gradient(90deg, #f0c14a 0%, #ffe9a3 25%, #ffffff 50%, #d4a017 75%, #e8b923 100%)', opacity: 0.8, flexShrink: 0 }} />
       <div style={{ display: 'flex', height: 12, flexShrink: 0 }}>
-        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #ff2d7855, transparent)' }} />
+        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #f0c14a55, transparent)' }} />
         <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #ffffff33, transparent)' }} />
-        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
+        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #e8b92355, transparent)' }} />
       </div>
 
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions, with the title between them like Standard ── */}
@@ -332,7 +332,7 @@ export default function ModernHomeView() {
           <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
           <h1 style={{
             fontSize: 56, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.05, color: '#fff',
-            textShadow: '0 0 14px rgba(255,45,120,0.55), 0 0 40px rgba(255,45,120,0.3)',
+            textShadow: '0 0 14px rgba(240,193,74,0.55), 0 0 40px rgba(240,193,74,0.3)',
           }}>
             The Outside Inn Jukebox
           </h1>
@@ -353,8 +353,8 @@ export default function ModernHomeView() {
         <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: '18px 16px 24px' }}>
 
           {/* Genres panel */}
-          <div style={{ ...glassPanel('rgba(255,45,120,0.65)'), padding: '20px 18px' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ff6bb0', marginBottom: 14 }}>GENRES</p>
+          <div style={{ ...glassPanel('rgba(240,193,74,0.65)'), padding: '20px 18px' }}>
+            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#ffe9a3', marginBottom: 14 }}>GENRES</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {MODERN_GENRES.map((g) => {
                 const isLoading = loadingGenre === g.label
@@ -364,8 +364,8 @@ export default function ModernHomeView() {
                     style={{
                       position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '17px 12px',
                       borderRadius: 16, border: 'none', overflow: 'hidden',
-                      background: 'linear-gradient(180deg, #ff9dc7 0%, #ff2d78 45%, #a30f4d 100%)',
-                      boxShadow: '0 0 18px rgba(255,45,120,0.55), inset 0 -2px 4px rgba(0,0,0,0.25)',
+                      background: 'linear-gradient(180deg, #fff4c2 0%, #f0c14a 45%, #8a6a10 100%)',
+                      boxShadow: '0 0 18px rgba(240,193,74,0.55), inset 0 -2px 4px rgba(0,0,0,0.25)',
                       opacity: loadingGenre && !isLoading ? 0.35 : 1,
                       transition: 'opacity 0.2s',
                     }}>
@@ -381,7 +381,7 @@ export default function ModernHomeView() {
           </div>
 
           {/* Now Playing panel */}
-          <div style={{ ...glassPanel('rgba(180,80,220,0.6)'), padding: '22px 24px' }}>
+          <div style={{ ...glassPanel('rgba(226,177,60,0.6)'), padding: '22px 24px' }}>
             <p style={{ textAlign: 'center', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 16, fontWeight: 600 }}>Now Playing</p>
 
             <div onClick={() => setFullscreenOpen(true)} style={{ width: 190, height: 190, margin: '0 auto 16px', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
@@ -404,7 +404,7 @@ export default function ModernHomeView() {
             {currentTrack && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
-                  <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #ff2d78, #ff6bb0)', borderRadius: 99, transition: 'width 0.5s linear' }} />
+                  <div style={{ width: `${progress}%`, height: '100%', background: 'linear-gradient(90deg, #f0c14a, #ffe9a3)', borderRadius: 99, transition: 'width 0.5s linear' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{formatDuration(progressMs)}</span>
@@ -417,7 +417,7 @@ export default function ModernHomeView() {
               <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" opacity="0.7" /></svg>
               </button>
-              <button onClick={togglePlay} className="active:scale-95" style={{ width: 66, height: 66, borderRadius: '50%', background: 'linear-gradient(135deg, #ff2d78, #b0207a)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 22px rgba(255,45,120,0.45)' }}>
+              <button onClick={togglePlay} className="active:scale-95" style={{ width: 66, height: 66, borderRadius: '50%', background: 'linear-gradient(135deg, #f0c14a, #b0207a)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 22px rgba(240,193,74,0.45)' }}>
                 {isPlaying
                   ? <svg width="22" height="22" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
                   : <svg width="22" height="22" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
@@ -430,7 +430,7 @@ export default function ModernHomeView() {
             {/* Search with live dropdown */}
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', height: 48, background: 'rgba(255,255,255,0.05)', borderRadius: (inlineDropdown.length > 0 || searchError || searchLoading) ? '20px 20px 0 0' : 24, border: '1px solid rgba(255,255,255,0.09)' }}>
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? '#ff6bb0' : 'rgba(255,255,255,0.35)', flexShrink: 0 }}>
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? '#ffe9a3' : 'rgba(255,255,255,0.35)', flexShrink: 0 }}>
                   <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
                 <input
@@ -449,7 +449,7 @@ export default function ModernHomeView() {
                   placeholder="Search for songs, artists, albums…"
                   inputMode="none"
                   className="flex-1 bg-transparent outline-none"
-                  style={{ fontSize: 14, color: '#fff', caretColor: '#ff6bb0' }}
+                  style={{ fontSize: 14, color: '#fff', caretColor: '#ffe9a3' }}
                 />
                 {inlineQuery && <button onClick={() => { setInlineQuery(''); setInlineDropdown([]); setSearchError('') }} style={{ color: 'rgba(255,255,255,0.4)' }}>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -471,16 +471,16 @@ export default function ModernHomeView() {
                     const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
                     const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
                     return (
-                      <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(255,45,120,0.14)] active:scale-[0.98] transition-all duration-150"
-                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', textAlign: 'left', background: 'rgba(255,45,120,0.05)', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(255,45,120,0.16)' : 'none' }}>
-                        <div style={{ width: 48, height: 48, borderRadius: isArtist ? '50%' : 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,45,120,0.1)', border: '1px solid rgba(255,45,120,0.35)', boxShadow: '0 0 10px rgba(255,45,120,0.2)' }}>
+                      <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(240,193,74,0.14)] active:scale-[0.98] transition-all duration-150"
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', textAlign: 'left', background: 'rgba(240,193,74,0.05)', borderBottom: i < inlineDropdown.length - 1 ? '1px solid rgba(240,193,74,0.16)' : 'none' }}>
+                        <div style={{ width: 48, height: 48, borderRadius: isArtist ? '50%' : 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(240,193,74,0.1)', border: '1px solid rgba(240,193,74,0.35)', boxShadow: '0 0 10px rgba(240,193,74,0.2)' }}>
                           {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                          <p style={{ fontSize: 13, color: '#ff8fc4', marginTop: 2 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
+                          <p style={{ fontSize: 13, color: '#ffe9a3', marginTop: 2 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
                         </div>
-                        <span style={{ fontSize: 11, color: '#ff8fc4', fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0, padding: '3px 8px', borderRadius: 20, border: '1px solid rgba(255,45,120,0.35)' }}>{entry.type}</span>
+                        <span style={{ fontSize: 11, color: '#ffe9a3', fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0, padding: '3px 8px', borderRadius: 20, border: '1px solid rgba(240,193,74,0.35)' }}>{entry.type}</span>
                       </button>
                     )
                   })}
@@ -490,8 +490,8 @@ export default function ModernHomeView() {
           </div>
 
           {/* Decades panel */}
-          <div style={{ ...glassPanel('rgba(78,224,255,0.65)'), padding: '20px 18px' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#4ee0ff', marginBottom: 14 }}>DECADES</p>
+          <div style={{ ...glassPanel('rgba(212,160,23,0.65)'), padding: '20px 18px' }}>
+            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: '#d4a017', marginBottom: 14 }}>DECADES</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {DECADES.map((dec) => {
                 const isLoading = loadingDecade === dec
@@ -501,8 +501,8 @@ export default function ModernHomeView() {
                     style={{
                       position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '17px 12px',
                       borderRadius: 16, border: 'none', overflow: 'hidden',
-                      background: 'linear-gradient(180deg, #bdf2ff 0%, #00d4ff 45%, #0a6a8a 100%)',
-                      boxShadow: '0 0 18px rgba(78,224,255,0.55), inset 0 -2px 4px rgba(0,0,0,0.2)',
+                      background: 'linear-gradient(180deg, #fff4c2 0%, #e8b923 45%, #6b4e0a 100%)',
+                      boxShadow: '0 0 18px rgba(212,160,23,0.55), inset 0 -2px 4px rgba(0,0,0,0.2)',
                       opacity: loadingDecade && !isLoading ? 0.35 : 1,
                       transition: 'opacity 0.2s',
                     }}>
@@ -510,7 +510,7 @@ export default function ModernHomeView() {
                     <span style={{ position: 'absolute', top: 2, left: 2, right: 2, height: '42%', borderRadius: '14px 14px 50% 50% / 14px 14px 100% 100%', background: 'rgba(255,255,255,0.45)', filter: 'blur(2px)', pointerEvents: 'none' }} />
                     {isLoading
                       ? <span className="skeleton" style={{ width: 18, height: 18, borderRadius: '50%', position: 'relative' }} />
-                      : <span style={{ fontSize: 19, fontWeight: 800, color: '#052430', position: 'relative' }}>'{dec}</span>}
+                      : <span style={{ fontSize: 19, fontWeight: 800, color: '#3a2a05', position: 'relative' }}>'{dec}</span>}
                   </button>
                 )
               })}
@@ -522,8 +522,8 @@ export default function ModernHomeView() {
         <div style={{ width: '100%', padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
           <div style={{
             borderRadius: 22, padding: 2,
-            background: 'linear-gradient(to right, #ff2d78, #b450dc, #4ee0ff)',
-            boxShadow: '-10px 0 55px rgba(255,45,120,0.4), 10px 0 55px rgba(78,224,255,0.4), 0 0 30px rgba(255,255,255,0.08)',
+            background: 'linear-gradient(to right, #f0c14a, #e8b923, #d4a017)',
+            boxShadow: '-10px 0 55px rgba(240,193,74,0.4), 10px 0 55px rgba(212,160,23,0.4), 0 0 30px rgba(255,255,255,0.08)',
           }}>
           <div style={{ borderRadius: 20, background: 'linear-gradient(180deg, rgba(20,15,20,0.97), rgba(10,8,12,0.99))', padding: 24 }}>
 
@@ -547,12 +547,12 @@ export default function ModernHomeView() {
 
             {popularArtists.length > 0 && (
               <div style={{ marginBottom: 26 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4ee0ff', marginBottom: 14, textAlign: 'center' }}>Popular Artists</p>
+                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#d4a017', marginBottom: 14, textAlign: 'center' }}>Popular Artists</p>
                 <div style={{ display: 'flex', gap: 18, overflow: 'hidden' }}>
                   {popularArtists.map(artist => (
                     <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
                       style={{ flexShrink: 0, width: 100, textAlign: 'center' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', marginBottom: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,45,120,0.35)', boxShadow: '0 0 14px rgba(255,45,120,0.2)' }}>
+                      <div style={{ width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', marginBottom: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(240,193,74,0.35)', boxShadow: '0 0 14px rgba(240,193,74,0.2)' }}>
                         {artist.images?.[0]?.url
                           ? <img src={artist.images[0].url} alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

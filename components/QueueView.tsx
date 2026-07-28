@@ -7,7 +7,11 @@ import { globalPlayer } from './SpotifyPlayer'
 import TrackRow from './TrackRow'
 
 export default function QueueView() {
-  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue } = useJukeboxStore()
+  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue, uiTheme } = useJukeboxStore()
+  const isModern = uiTheme === 'modern'
+  // Modern uses gold; Standard keeps its existing pink accent unchanged
+  const accentRGB = isModern ? '240,193,74' : '236,72,153'
+  const accentLightRGB = isModern ? '255,244,194' : '249,168,212'
 
   const dragFromIndex = useRef<number | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
@@ -92,25 +96,25 @@ export default function QueueView() {
         {currentTrack && (
           <div className="mb-4">
             <p className="text-white/30 text-xs mb-2 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 inline-block animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style={{ background: `rgb(${accentRGB})` }} />
               Now Playing
             </p>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20">
-              <div className="relative flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden ring-2 ring-pink-500">
+            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: `rgba(${accentRGB},0.1)`, border: `1px solid rgba(${accentRGB},0.2)` }}>
+              <div className="relative flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden" style={{ boxShadow: `0 0 0 2px rgb(${accentRGB})` }}>
                 {currentTrack.album.images?.[0]?.url && (
                   <img src={currentTrack.album.images[0].url} alt={currentTrack.album.name} className="w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-1.5">
                   <div className="flex gap-0.5 items-end h-4">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="w-0.5 bg-pink-400 rounded-full eq-bar" style={{ height: 12 }} />
+                      <div key={i} className="w-0.5 rounded-full eq-bar" style={{ height: 12, background: `rgb(${accentLightRGB})` }} />
                     ))}
                   </div>
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-pink-300 text-sm font-semibold truncate">{currentTrack.name}</p>
-                <p className="text-pink-300/50 text-xs truncate">
+                <p className="text-sm font-semibold truncate" style={{ color: `rgb(${accentLightRGB})` }}>{currentTrack.name}</p>
+                <p className="text-xs truncate" style={{ color: `rgba(${accentLightRGB},0.5)` }}>
                   {currentTrack.artists.map((a, i) => (
                     <span key={a.id}>
                       {i > 0 && ', '}
@@ -198,8 +202,10 @@ export default function QueueView() {
                   <button
                     onClick={() => bumpFromContextToQueue(track.queueId)}
                     aria-label="Play next"
-                    className="w-11 h-11 rounded-full flex items-center justify-center
-                      text-white/30 hover:text-pink-400 hover:bg-pink-400/10 transition-all duration-150"
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-white/30 transition-all duration-150"
+                    style={{ '--hover-color': `rgb(${accentRGB})` } as React.CSSProperties}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = `rgb(${accentRGB})`; e.currentTarget.style.background = `rgba(${accentRGB},0.1)` }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.background = '' }}
                   >
                     <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
                       <path d="M7 11V3M3 6.5L7 2.5L11 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
