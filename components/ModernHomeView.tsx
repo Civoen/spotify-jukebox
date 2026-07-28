@@ -373,7 +373,7 @@ export default function ModernHomeView() {
                     <span style={{ position: 'absolute', top: 2, left: 2, right: 2, height: '42%', borderRadius: '14px 14px 50% 50% / 14px 14px 100% 100%', background: 'rgba(255,255,255,0.35)', filter: 'blur(2px)', pointerEvents: 'none' }} />
                     {isLoading
                       ? <span className="skeleton" style={{ width: 18, height: 18, borderRadius: '50%', position: 'relative' }} />
-                      : <span style={{ fontSize: 19, fontWeight: 800, color: 'white', position: 'relative', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{g.label}</span>}
+                      : <span style={{ fontSize: 19, fontWeight: 800, color: '#3a2a05', position: 'relative' }}>{g.label}</span>}
                   </button>
                 )
               })}
