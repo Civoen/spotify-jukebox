@@ -58,6 +58,10 @@ export default function SpotifyPlayer() {
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const prevPausedRef = useRef<boolean>(true)
   const hasImportedQueue = useRef(false)
+  const reconnectAttempts = useRef(0)
+  const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const MAX_RECONNECT_ATTEMPTS = 4
+  const RECONNECT_DELAYS = [3000, 6000, 10000, 15000] // increasing backoff
 
   // Queue import is intentionally deferred to the 'ready' event handler below
   // so it doesn't compete with the SDK's own internal API calls on startup.
@@ -80,9 +84,36 @@ export default function SpotifyPlayer() {
       playerRef.current = player
       globalPlayer = player
 
+      const attemptReconnect = () => {
+        if (reconnectTimeout.current) return // already retrying
+        const attempt = reconnectAttempts.current
+        if (attempt >= MAX_RECONNECT_ATTEMPTS) {
+          console.error('Spotify player: gave up reconnecting after', attempt, 'attempts')
+          useJukeboxStore.getState().setPlayerDisconnected(true)
+          return
+        }
+        const delay = RECONNECT_DELAYS[attempt] ?? RECONNECT_DELAYS[RECONNECT_DELAYS.length - 1]
+        reconnectTimeout.current = setTimeout(() => {
+          reconnectTimeout.current = null
+          reconnectAttempts.current += 1
+          console.warn(`Spotify player: reconnect attempt ${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS}`)
+          player.connect().then((success) => {
+            // If this succeeds, the SDK's own 'ready' event will fire and reset
+            // reconnectAttempts/clear the disconnected flag. If it silently
+            // fails without a 'ready' event, keep retrying via 'not_ready'.
+            if (!success) attemptReconnect()
+          }).catch(() => attemptReconnect())
+        }, delay)
+      }
+
       player.addListener('ready', (state) => {
         const { device_id } = state as { device_id: string }
         setDeviceId(device_id)
+        // A successful 'ready' means we're connected — clear any pending
+        // reconnect attempts and the disconnected banner if it was showing
+        reconnectAttempts.current = 0
+        if (reconnectTimeout.current) { clearTimeout(reconnectTimeout.current); reconnectTimeout.current = null }
+        useJukeboxStore.getState().setPlayerDisconnected(false)
         // Wait 2s after SDK ready before fetching queue — lets the SDK finish
         // its internal API calls so we don't contribute to rate limiting.
         if (!hasImportedQueue.current) {
@@ -101,8 +132,14 @@ export default function SpotifyPlayer() {
       })
 
       player.addListener('not_ready', () => {
-        console.warn('Spotify player offline')
+        console.warn('Spotify player offline — attempting to reconnect')
+        attemptReconnect()
       })
+
+      player.addListener('initialization_error', (e) => console.error('Spotify SDK initialization error:', e))
+      player.addListener('authentication_error', (e) => console.error('Spotify SDK authentication error:', e))
+      player.addListener('account_error', (e) => console.error('Spotify SDK account error (Premium required):', e))
+      player.addListener('playback_error', (e) => console.error('Spotify SDK playback error:', e))
 
       player.addListener('player_state_changed', (state) => {
         if (!state) return
@@ -170,6 +207,7 @@ export default function SpotifyPlayer() {
     return () => {
       playerRef.current?.disconnect()
       if (progressInterval.current) clearInterval(progressInterval.current)
+      if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current)
     }
   }, [accessToken, setDeviceId, setIsPlaying, setCurrentTrack, setProgressMs, setDurationMs, skipNext])
 

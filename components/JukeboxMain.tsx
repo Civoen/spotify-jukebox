@@ -14,6 +14,7 @@ import BottomNav from './BottomNav'
 import SpotifyPlayer from './SpotifyPlayer'
 import OnScreenKeyboard from './OnScreenKeyboard'
 import FullscreenPlayer from './FullscreenPlayer'
+import PlayerDisconnectedBanner from './PlayerDisconnectedBanner'
 
 export default function JukeboxMain() {
   const activeView = useJukeboxStore((s) => s.activeView)
@@ -24,6 +25,7 @@ export default function JukeboxMain() {
     <div className={`h-full flex flex-col overflow-hidden ${uiTheme === 'modern' ? 'modern-bg' : 'retro-bg'}`} style={{ transition: 'background 0.4s ease' }}>
       {/* Spotify Web Playback SDK (hidden) */}
       <SpotifyPlayer />
+      <PlayerDisconnectedBanner />
 
       {/* Main content area */}
       <div className="flex-1 overflow-hidden relative">

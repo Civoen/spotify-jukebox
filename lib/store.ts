@@ -90,9 +90,26 @@ interface JukeboxState {
   fullscreenOpen: boolean
   setFullscreenOpen: (v: boolean) => void
 
+  // Set when the Spotify player disconnects and automatic reconnection attempts
+  // have been exhausted — shows an on-screen indicator so the venue knows to act
+  playerDisconnected: boolean
+  setPlayerDisconnected: (v: boolean) => void
+
   // Popularity — tracks how many times each track has been played on this jukebox
   popularity: Record<string, { track: SpotifyTrack; count: number }>
   incrementPopularity: (track: SpotifyTrack) => void
+}
+
+// Persist the priority queue and fallback playlist so a page reload or
+// re-login doesn't wipe out what was queued up — mirrors the same pattern
+// already used for uiTheme and popularity above.
+function persistQueue(queue: QueueTrack[]) {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem('jukebox-queue', JSON.stringify(queue)) } catch {}
+}
+function persistContextQueue(contextQueue: QueueTrack[]) {
+  if (typeof window === 'undefined') return
+  try { localStorage.setItem('jukebox-context-queue', JSON.stringify(contextQueue)) } catch {}
 }
 
 export const useJukeboxStore = create<JukeboxState>((set, get) => ({
@@ -113,8 +130,20 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
   setDurationMs: (ms) => set({ durationMs: ms }),
 
   // Queue
-  queue: [],
-  contextQueue: [],
+  queue: (() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = localStorage.getItem('jukebox-queue')
+      return raw ? JSON.parse(raw) : []
+    } catch { return [] }
+  })(),
+  contextQueue: (() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const raw = localStorage.getItem('jukebox-context-queue')
+      return raw ? JSON.parse(raw) : []
+    } catch { return [] }
+  })(),
   addToQueue: (track) => {
     // User-added songs always join the priority queue, so they play next —
     // ahead of whatever fallback playlist/decade/genre is queued up behind them.
@@ -124,6 +153,7 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
       addedAt: Date.now(),
     }
     set((s) => ({ queue: [...s.queue, queueTrack] }))
+    persistQueue(get().queue)
     // Flash recently added
     set({ recentlyAdded: track.id })
     setTimeout(() => set({ recentlyAdded: null }), 1500)
@@ -137,11 +167,16 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
       addedAt: Date.now() + i,
     }))
     set((s) => ({ queue: [...s.queue, ...queueTracks] }))
+    persistQueue(get().queue)
   },
-  removeFromQueue: (queueId) =>
-    set((s) => ({ queue: s.queue.filter((t) => t.queueId !== queueId) })),
-  removeFromContextQueue: (queueId) =>
-    set((s) => ({ contextQueue: s.contextQueue.filter((t) => t.queueId !== queueId) })),
+  removeFromQueue: (queueId) => {
+    set((s) => ({ queue: s.queue.filter((t) => t.queueId !== queueId) }))
+    persistQueue(get().queue)
+  },
+  removeFromContextQueue: (queueId) => {
+    set((s) => ({ contextQueue: s.contextQueue.filter((t) => t.queueId !== queueId) }))
+    persistContextQueue(get().contextQueue)
+  },
   bumpFromContextToQueue: (queueId) => {
     // "Play this next" from the fallback playlist — moves the track into the
     // priority queue (at the very front) and removes it from the fallback list
@@ -152,6 +187,8 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
       contextQueue: contextQueue.filter((t) => t.queueId !== queueId),
       queue: [track, ...queue],
     })
+    persistQueue(get().queue)
+    persistContextQueue(get().contextQueue)
   },
   reorderQueue: (fromIndex, toIndex) => {
     const { queue } = get()
@@ -159,6 +196,7 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
     const [item] = newQueue.splice(fromIndex, 1)
     newQueue.splice(toIndex, 0, item)
     set({ queue: newQueue })
+    persistQueue(newQueue)
   },
   importQueue: (tracks) => {
     const { queue, contextQueue } = get()
@@ -169,6 +207,7 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
       addedAt: Date.now() + i,
     }))
     set({ contextQueue: queueTracks })
+    persistContextQueue(queueTracks)
   },
   // Sets the fallback playlist (decade shuffle, genre, playlist/album Play All).
   // Plays automatically whenever the priority queue is empty.
@@ -179,22 +218,29 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
       addedAt: Date.now() + i,
     }))
     set({ contextQueue: queueTracks })
+    persistContextQueue(queueTracks)
   },
   skipNext: () => {
     const { queue, contextQueue } = get()
     if (queue.length > 0) {
       const [next, ...rest] = queue
       set({ queue: rest })
+      persistQueue(rest)
       return next
     }
     if (contextQueue.length > 0) {
       const [next, ...rest] = contextQueue
       set({ contextQueue: rest })
+      persistContextQueue(rest)
       return next
     }
     return null
   },
-  clearQueue: () => set({ queue: [], contextQueue: [] }),
+  clearQueue: () => {
+    set({ queue: [], contextQueue: [] })
+    persistQueue([])
+    persistContextQueue([])
+  },
 
   // Search
   searchQuery: '',
@@ -253,6 +299,9 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
   // Fullscreen "Now Playing" view
   fullscreenOpen: false,
   setFullscreenOpen: (v) => set({ fullscreenOpen: v }),
+
+  playerDisconnected: false,
+  setPlayerDisconnected: (v) => set({ playerDisconnected: v }),
 
   // Popularity
   popularity: (() => {
