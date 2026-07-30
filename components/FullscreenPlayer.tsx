@@ -68,6 +68,7 @@ export default function FullscreenPlayer() {
   const {
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs,
     accessToken, deviceId, skipNext, queue, contextQueue, setFullscreenOpen,
+    volume, setVolume,
   } = useJukeboxStore()
 
   const albumArt = currentTrack?.album.images?.[0]?.url
@@ -81,6 +82,10 @@ export default function FullscreenPlayer() {
   const togglePlay = () => {
     if (isPlaying) globalPlayer?.pause(); else globalPlayer?.resume()
     setIsPlaying(!isPlaying)
+  }
+  const handleVolume = (v: number) => {
+    setVolume(v)
+    globalPlayer?.setVolume(v)
   }
   const handleSkip = () => {
     const next = skipNext()
@@ -169,6 +174,26 @@ export default function FullscreenPlayer() {
         </div>
 
         <p className="font-typewriter" style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 40 }}>tap anywhere to go back</p>
+
+        <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 28 }}>
+          {[0, 0.2, 0.4, 0.6, 0.8, 1.0].map((step) => {
+            const active = volume >= step - 0.01
+            return (
+              <button
+                key={step}
+                onClick={() => handleVolume(step)}
+                aria-label={`Volume ${Math.round(step * 100)}%`}
+                style={{
+                  width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                  background: active ? accent : 'rgba(255,255,255,0.08)',
+                  border: `1px solid ${active ? accentBorder : 'rgba(255,255,255,0.2)'}`,
+                  boxShadow: active ? `0 0 10px 3px ${accentSoft}` : 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
 
       {/* Next Up bar — always reserves the same height, whether populated or

@@ -48,6 +48,7 @@ body {
 }
 
 .glow-pink { box-shadow: 0 0 24px rgba(255, 45, 120, 0.5), 0 0 48px rgba(255, 45, 120, 0.2); }
+.glow-gold { box-shadow: 0 0 24px rgba(240, 193, 74, 0.6), 0 0 48px rgba(240, 193, 74, 0.25); }
 .glow-blue { box-shadow: 0 0 24px rgba(0, 212, 255, 0.5), 0 0 48px rgba(0, 212, 255, 0.2); }
 .glow-purple { box-shadow: 0 0 24px rgba(168, 85, 247, 0.5), 0 0 48px rgba(168, 85, 247, 0.2); }
 

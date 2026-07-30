@@ -153,7 +153,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Pr
         <div className="relative flex-shrink-0">
           {justAdded && (
             <span
-              className="absolute inset-0 rounded-full bg-pink-500 animate-ring-pulse pointer-events-none"
+              className="absolute inset-0 rounded-full bg-[#f0c14a] animate-ring-pulse pointer-events-none"
               aria-hidden="true"
             />
           )}
@@ -162,7 +162,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Pr
             className={`relative w-11 h-11 rounded-full flex items-center justify-center
               transition-all duration-200 active:scale-90
               ${justAdded
-                ? 'bg-pink-500 glow-pink animate-add-pop'
+                ? 'bg-[#f0c14a] glow-gold animate-add-pop'
                 : 'bg-white/8 hover:bg-white/15 text-white/60 hover:text-white'}`}
           >
             {justAdded ? (
@@ -177,7 +177,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Pr
           </button>
           {justAdded && (
             <span
-              className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-pink-400 animate-slide-up"
+              className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-[#f0c14a] animate-slide-up"
               aria-hidden="true"
             >
               Added
