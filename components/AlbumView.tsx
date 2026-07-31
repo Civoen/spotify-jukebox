@@ -73,7 +73,7 @@ export default function AlbumView() {
             {!loading && tracks.length > 0 && (
               <button
                 onClick={handlePlayAll}
-                className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-pink-500 hover:bg-pink-400 active:scale-90 transition-all duration-200 glow-pink"
+                className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#f0c14a] hover:bg-[#ffd76a] active:scale-90 transition-all duration-200 glow-gold"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
                   <path d="M5 4L17 10L5 16V4Z" />

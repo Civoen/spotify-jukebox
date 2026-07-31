@@ -50,7 +50,7 @@ export default function SearchView() {
     uiTheme,
   } = useJukeboxStore()
 
-  // Modern theme uses pink instead of the Standard theme's gold accent
+  // Modern theme uses the same gold accent as Standard now
   const accentRGB = uiTheme === 'modern' ? '240,193,74' : '201,162,39'
   const accentText = uiTheme === 'modern' ? '#fff' : 'var(--retro-cream)'
 
@@ -64,6 +64,15 @@ export default function SearchView() {
 
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clear the search bar and results whenever the user leaves this tab, so
+  // coming back to Search always starts fresh rather than showing a stale query
+  useEffect(() => {
+    return () => {
+      setSearchQuery('')
+      setSearchResults([])
+    }
+  }, [])
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -280,7 +289,7 @@ export default function SearchView() {
                       </div>
                       <button
                         onClick={(e) => handlePlayAllAlbum(album, e)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-pink-500 hover:bg-pink-400 active:scale-90 transition-all duration-200 glow-pink"
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#f0c14a] hover:bg-[#ffd76a] active:scale-90 transition-all duration-200 glow-gold"
                         aria-label={`Play all songs from ${album.name}`}
                       >
                         {playingAlbumId === album.id ? (

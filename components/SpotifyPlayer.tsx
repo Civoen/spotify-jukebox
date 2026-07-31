@@ -54,6 +54,12 @@ export let globalPlayer: SpotifyPlayerInstance | null = null
 export default function SpotifyPlayer() {
   const { accessToken, setDeviceId, setIsPlaying, setCurrentTrack, setProgressMs, setDurationMs, skipNext } =
     useJukeboxStore()
+  // A stable boolean, not the token string itself — this is what the setup
+  // effect below depends on, so a routine token refresh (which changes the
+  // string but not whether we HAVE a token) never tears down and rebuilds
+  // the whole player. That rebuild was the actual cause of playback randomly
+  // going silent: every ~55 minutes, disconnect() would fire mid-song.
+  const hasToken = !!accessToken
   const playerRef = useRef<SpotifyPlayerInstance | null>(null)
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const prevPausedRef = useRef<boolean>(true)
@@ -67,7 +73,7 @@ export default function SpotifyPlayer() {
   // so it doesn't compete with the SDK's own internal API calls on startup.
 
   useEffect(() => {
-    if (!accessToken) return
+    if (!hasToken) return
 
     const script = document.createElement('script')
     script.src = 'https://sdk.scdn.co/spotify-player.js'
@@ -77,7 +83,13 @@ export default function SpotifyPlayer() {
     window.onSpotifyWebPlaybackSDKReady = () => {
       const player = new window.Spotify.Player({
         name: 'Jukebox',
-        getOAuthToken: (cb) => cb(accessToken),
+        getOAuthToken: (cb) => {
+          // Pull the *current* token from the store, not the value this
+          // effect closed over — the SDK calls this itself whenever it needs
+          // a fresh token, including well after our own token refresh runs.
+          const tok = useJukeboxStore.getState().accessToken
+          if (tok) cb(tok)
+        },
         volume: 0.7,
       })
 
@@ -209,7 +221,7 @@ export default function SpotifyPlayer() {
       if (progressInterval.current) clearInterval(progressInterval.current)
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current)
     }
-  }, [accessToken, setDeviceId, setIsPlaying, setCurrentTrack, setProgressMs, setDurationMs, skipNext])
+  }, [hasToken, setDeviceId, setIsPlaying, setCurrentTrack, setProgressMs, setDurationMs, skipNext])
 
   // Tick progress — subscribe to isPlaying so the interval starts/stops correctly
   useEffect(() => {
