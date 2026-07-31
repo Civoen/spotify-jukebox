@@ -10,9 +10,10 @@ interface Props {
   inQueue?: boolean
   queueId?: string
   isFirstInQueue?: boolean
+  waitTime?: string
 }
 
-export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Props) {
+export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, waitTime }: Props) {
   const {
     accessToken,
     deviceId,
@@ -116,6 +117,11 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue }: Pr
             </span>
           ))}
         </p>
+        {waitTime && (
+          <p className="text-xs text-white/25 truncate mt-0.5">
+            Plays in {waitTime}
+          </p>
+        )}
       </div>
 
       {/* Duration */}

@@ -7,11 +7,31 @@ import { globalPlayer } from './SpotifyPlayer'
 import TrackRow from './TrackRow'
 
 export default function QueueView() {
-  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue, uiTheme } = useJukeboxStore()
+  const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue, uiTheme, progressMs, durationMs } = useJukeboxStore()
   const isModern = uiTheme === 'modern'
   // Modern uses gold; Standard keeps its existing pink accent unchanged
   const accentRGB = isModern ? '240,193,74' : '236,72,153'
   const accentLightRGB = isModern ? '255,244,194' : '249,168,212'
+
+  // Estimated wait time — cumulative duration of everything ahead of each
+  // song, starting from how much of the current track is left to play
+  const formatWait = (ms: number) => {
+    if (ms < 60000) return '<1 min'
+    const totalMin = Math.round(ms / 60000)
+    if (totalMin < 60) return `~${totalMin} min`
+    const h = Math.floor(totalMin / 60)
+    const m = totalMin % 60
+    return `~${h}h${m > 0 ? ` ${m}m` : ''}`
+  }
+  const remainingCurrent = currentTrack ? Math.max(0, durationMs - progressMs) : 0
+  const waitTimes = new Map<string, number>()
+  ;(() => {
+    let cumulative = remainingCurrent
+    for (const t of [...queue, ...contextQueue]) {
+      waitTimes.set(t.queueId, cumulative)
+      cumulative += t.duration_ms
+    }
+  })()
 
   const dragFromIndex = useRef<number | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
@@ -173,7 +193,7 @@ export default function QueueView() {
                 </div>
                 <span className="text-white/20 text-xs w-4 text-right flex-shrink-0">{idx + 1}</span>
                 <div className="flex-1">
-                  <TrackRow track={track} inQueue={true} queueId={track.queueId} isFirstInQueue={idx === 0} />
+                  <TrackRow track={track} inQueue={true} queueId={track.queueId} isFirstInQueue={idx === 0} waitTime={formatWait(waitTimes.get(track.queueId) ?? 0)} />
                 </div>
               </div>
             ))}
@@ -195,7 +215,10 @@ export default function QueueView() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-white/80 text-sm font-medium truncate">{track.name}</p>
-                  <p className="text-white/30 text-xs truncate">{track.artists.map(a => a.name).join(', ')}</p>
+                  <p className="text-white/30 text-xs truncate">
+                    {track.artists.map(a => a.name).join(', ')}
+                    <span className="text-white/20"> · Plays in {formatWait(waitTimes.get(track.queueId) ?? 0)}</span>
+                  </p>
                 </div>
                 <span className="text-white/30 text-xs flex-shrink-0">{formatDuration(track.duration_ms)}</span>
                 <div className="flex items-center gap-1 flex-shrink-0">
