@@ -13,6 +13,7 @@ import { globalPlayer } from './SpotifyPlayer'
 import { playTrack } from '@/lib/spotify'
 import TrackRow from './TrackRow'
 import { ArchCrown, ChromeStrip, chrome, chromeH } from './ArchCrown'
+import ThemeSwitcher from './ThemeSwitcher'
 
 function rowLabel(i: number) {
   return `${String.fromCharCode(65 + Math.floor(i / 9))}${(i % 9) + 1}`
@@ -125,7 +126,7 @@ export default function HomeView() {
     accessToken, deviceId, setActiveView, setActivePlaylist, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, queue, contextQueue, skipNext, addToQueue,
     playHistory, addToHistory, incrementPopularity, setKeyboardVisible, setOnKeyPress,
-    volume, setVolume, setSearchQuery, setUiTheme, setFullscreenOpen,
+    volume, setVolume, setSearchQuery, setFullscreenOpen,
   } = useJukeboxStore()
 
   const [loading, setLoading] = useState(true)
@@ -348,12 +349,9 @@ export default function HomeView() {
           <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #00d4ff55, transparent)' }} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
-          <button onClick={() => setUiTheme('modern')} aria-label="Switch to Modern design" style={{ justifySelf: 'start', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M4 8a7 7 0 0 1 12-4.5M18 4v4h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M18 14a7 7 0 0 1-12 4.5M4 18v-4h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          <div style={{ justifySelf: 'start' }}>
+            <ThemeSwitcher color="rgba(201,162,39,0.55)" menuBg="#1c1006" accentColor="#e8c060" border="1px solid rgba(201,162,39,0.3)" />
+          </div>
           <JukeboxLogo />
           <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
             <svg width="26" height="26" viewBox="0 0 14 14" fill="none">

@@ -9,9 +9,10 @@ import TrackRow from './TrackRow'
 export default function QueueView() {
   const { queue, contextQueue, currentTrack, accessToken, deviceId, skipNext, clearQueue, reorderQueue, setActiveView, setActiveArtist, removeFromContextQueue, bumpFromContextToQueue, uiTheme, progressMs, durationMs } = useJukeboxStore()
   const isModern = uiTheme === 'modern'
-  // Modern uses gold; Standard keeps its existing pink accent unchanged
-  const accentRGB = isModern ? '240,193,74' : '236,72,153'
-  const accentLightRGB = isModern ? '255,244,194' : '249,168,212'
+  const isDiner = uiTheme === 'diner'
+  // Modern uses gold, Diner uses red, Standard keeps its existing pink accent unchanged
+  const accentRGB = isModern ? '240,193,74' : isDiner ? '201,48,44' : '236,72,153'
+  const accentLightRGB = isModern ? '255,244,194' : isDiner ? '255,154,138' : '249,168,212'
 
   // Estimated wait time — cumulative duration of everything ahead of each
   // song, starting from how much of the current track is left to play

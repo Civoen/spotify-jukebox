@@ -94,8 +94,9 @@ export default function OnScreenKeyboard() {
   if (!keyboardVisible) return null
 
   const isModern = uiTheme === 'modern'
-  // Modern uses pink instead of the Standard theme's gold
-  const accentRGB = isModern ? '240,193,74' : '201,162,39'
+  const isDiner = uiTheme === 'diner'
+  // Modern uses gold, Diner uses red, Standard keeps its gold accent
+  const accentRGB = isModern ? '240,193,74' : isDiner ? '201,48,44' : '201,162,39'
 
   const rows = numMode ? NUM_ROWS : ALPHA_ROWS
 
@@ -112,7 +113,7 @@ export default function OnScreenKeyboard() {
       left: 0,
       right: 0,
       zIndex: 200,
-      background: isModern ? 'rgba(8,6,10,0.98)' : 'rgba(10,5,0,0.98)',
+      background: isDiner ? 'rgba(18,9,4,0.98)' : isModern ? 'rgba(8,6,10,0.98)' : 'rgba(10,5,0,0.98)',
       boxShadow: '0 -8px 40px rgba(0,0,0,0.9)',
     }}>
       <div style={{ padding: '12px 8px 16px', display: 'flex', flexDirection: 'column', gap: 7 }}>

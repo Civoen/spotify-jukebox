@@ -11,21 +11,12 @@ import {
 import { DECADE_SONGS } from '@/lib/decade-tracks'
 import { GENRES } from '@/lib/genres'
 import { globalPlayer } from './SpotifyPlayer'
+import ThemeSwitcher from './ThemeSwitcher'
 
 const MODERN_GENRES = GENRES.filter(g =>
   ['Pop', 'Rock', 'Hip-Hop', 'R&B', 'Dance', 'Electronic', 'Metal'].includes(g.label)
 )
 const DECADES = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'] as const
-
-/* ─── Switch design icon — two curved arrows, sits where Insert Coin used to be ─── */
-function SwitchDesignIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-      <path d="M4 8a7 7 0 0 1 12-4.5M18 4v4h-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M18 14a7 7 0 0 1-12 4.5M4 18v-4h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 // Sleek glass-panel style shared by every box in the Modern view — a
 // glowing, shiny gold outline forming a pale-gold to deep-amber gradient
@@ -106,7 +97,7 @@ export default function ModernHomeView() {
     accessToken, deviceId, setActiveView, setActiveArtist, setActiveAlbum,
     currentTrack, isPlaying, setIsPlaying, progressMs, durationMs, skipNext, addToQueue,
     playHistory, addToHistory, incrementPopularity, popularity,
-    setKeyboardVisible, setOnKeyPress, setUiTheme, setFullscreenOpen,
+    setKeyboardVisible, setOnKeyPress, setFullscreenOpen,
   } = useJukeboxStore()
 
   const [loadingDecade, setLoadingDecade] = useState<string | null>(null)
@@ -321,13 +312,9 @@ export default function ModernHomeView() {
 
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions, with the title between them like Standard ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1000, margin: '0 auto', padding: '24px 16px' }}>
-        <button
-          onClick={() => setUiTheme('retro')}
-          aria-label="Switch to Standard design"
-          style={{ justifySelf: 'start', color: 'rgba(255,255,255,0.5)', padding: 8 }}
-        >
-          <SwitchDesignIcon />
-        </button>
+        <div style={{ justifySelf: 'start' }}>
+          <ThemeSwitcher color="rgba(255,255,255,0.5)" menuBg="#161018" accentColor="#f0c14a" border="1px solid rgba(240,193,74,0.3)" />
+        </div>
         <div style={{ textAlign: 'center', lineHeight: 1 }}>
           <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
           <h1 style={{

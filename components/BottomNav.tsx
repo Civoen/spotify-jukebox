@@ -38,28 +38,28 @@ const tabs = [
 export default function BottomNav() {
   const { activeView, setActiveView, queue, uiTheme } = useJukeboxStore()
   const isModern = uiTheme === 'modern'
+  const isDiner = uiTheme === 'diner'
 
   const activeTab = activeView === 'artist' ? 'search'
     : (activeView === 'album' || activeView === 'playlist') ? 'home'
     : activeView as 'home' | 'search' | 'queue'
 
-  // Modern reuses its own amber accent (matching the Most Popular panel)
-  // instead of the Standard theme's muted retro gold, so all three tabs
-  // stay visually consistent with whichever design is active.
-  const TAB_COLORS = {
-    home: isModern ? '#f0c14a' : '#ff2d78',
-    search: isModern ? '#f0c14a' : '#c9a227',
-    queue: isModern ? '#d4a017' : '#00d4ff',
-  } as const
+  // Each theme gets its own consistent tri-colour accent set, so the nav
+  // bar always matches whichever design is currently active.
+  const TAB_COLORS = isDiner
+    ? { home: '#c9302c', search: '#e8a03c', queue: '#2a8a8a' }
+    : { home: '#ff2d78', search: isModern ? '#f0c14a' : '#c9a227', queue: '#00d4ff' }
+
+  const bg = isDiner ? 'rgba(20,10,4,0.97)' : isModern ? 'rgba(8,6,10,0.97)' : 'rgba(14,8,0,0.97)'
 
   return (
-    <div className="flex-shrink-0" style={{ background: isModern ? 'rgba(8,6,10,0.97)' : 'rgba(14,8,0,0.97)', transition: 'background 0.3s' }}>
+    <div className="flex-shrink-0" style={{ background: bg, transition: 'background 0.3s' }}>
 
       {/* Tri-colour glow diffusion — brighter on active tab */}
       <div style={{ display: 'flex', height: 14 }}>
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'home' ? '#ff2d78bb' : '#ff2d7830'}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'home' ? `${TAB_COLORS.home}bb` : `${TAB_COLORS.home}30`}, transparent)`, transition: 'background 0.3s' }} />
         <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'search' ? `${TAB_COLORS.search}bb` : `${TAB_COLORS.search}30`}, transparent)`, transition: 'background 0.3s' }} />
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'queue' ? '#00d4ffbb' : '#00d4ff30'}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'queue' ? `${TAB_COLORS.queue}bb` : `${TAB_COLORS.queue}30`}, transparent)`, transition: 'background 0.3s' }} />
       </div>
 
       {/* Nav buttons */}
