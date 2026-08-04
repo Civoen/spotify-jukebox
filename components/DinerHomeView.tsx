@@ -24,70 +24,140 @@ const RED_LIGHT = '#ff6b5a'
 const TEAL = '#2a8a8a'
 const TEAL_LIGHT = '#5cd6d6'
 const CREAM = '#f0e4c8'
-const CHROME_FLAT = '#c9b888'
+const CHROME_FLAT = '#c9c0a8'
+const CHROME_DARK = '#8a8270'
 const BLACK_PANEL = '#0e0800'
 
 const FRAME_MAX = 1000
-// Concentric bands, outermost first — red, cream, teal, chrome, matching the
-// reference's picture-frame border. Each number is the outer radius of that band.
 const BANDS = [
   { color: RED, r: 480 },
   { color: CREAM, r: 464 },
   { color: TEAL, r: 448 },
   { color: CHROME_FLAT, r: 434 },
 ]
-const CONTENT_R = 420 // inner edge — where the black cabinet interior begins
+const CONTENT_R = 420
+const DOME_RATIO = 0.42
 
-// The flat rainbow picture-frame border — a domed top (built from stacked
-// clipped circles) that continues as straight vertical strips down both
-// sides for the rest of the scrolling content, exactly like the reference.
+// 8-point starburst, used for the peak badge and the speaker-grille centers
+function Starburst({ size, color }: { size: number; color: string }) {
+  const pts: string[] = []
+  const c = size / 2
+  for (let i = 0; i < 16; i++) {
+    const ang = (Math.PI * 2 * i) / 16 - Math.PI / 2
+    const r = i % 2 === 0 ? c : c * 0.38
+    pts.push(`${c + r * Math.cos(ang)},${c + r * Math.sin(ang)}`)
+  }
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <polygon points={pts.join(' ')} fill={color} />
+    </svg>
+  )
+}
+
+// Ribbed chrome pillar — a short stack of horizontal metallic rings, sitting
+// where the dome curve meets the straight sides, like the reference's posts
+function ChromePillar() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      {Array.from({ length: 7 }).map((_, i) => (
+        <div key={i} style={{
+          width: 34, height: 9, borderRadius: 5,
+          background: `linear-gradient(90deg, ${CHROME_DARK} 0%, ${CHROME_FLAT} 30%, #fff8e8 50%, ${CHROME_FLAT} 70%, ${CHROME_DARK} 100%)`,
+        }} />
+      ))}
+    </div>
+  )
+}
+
+// Speaker grille — dark textured circle with a chrome starburst compass
+function SpeakerGrille({ size }: { size: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0, position: 'relative',
+      background: 'radial-gradient(circle at 40% 35%, #3a2a18, #1a1008 70%)',
+      border: `4px solid ${CHROME_FLAT}`, boxShadow: 'inset 0 0 20px rgba(0,0,0,0.7)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `2px solid ${CHROME_DARK}66` }} />
+      <Starburst size={size * 0.6} color={CHROME_FLAT} />
+      <div style={{ position: 'absolute', width: size * 0.16, height: size * 0.16, borderRadius: '50%', background: RED, border: `2px solid ${CHROME_FLAT}` }} />
+    </div>
+  )
+}
+
+// The flat rainbow picture-frame border, with a star badge at the peak and
+// chrome pillars where the dome meets the straight sides — matching the
+// reference far more closely than a plain striped ring.
 function DinerFrame({ children }: { children: React.ReactNode }) {
-  const archTopPad = 14
-  const archH = archTopPad + BANDS[0].r
+  const archTopPad = 20
+  const maxVR = BANDS[0].r * DOME_RATIO
+  const archH = archTopPad + maxVR
   const cx = FRAME_MAX / 2
 
   return (
     <div style={{ position: 'relative', width: '100%', maxWidth: FRAME_MAX, margin: '0 auto' }}>
+      {/* Peak badge */}
+      <div style={{ position: 'absolute', top: -6, left: '50%', transform: 'translateX(-50%)', zIndex: 5 }}>
+        <div style={{
+          width: 84, height: 60, background: `linear-gradient(180deg, ${RED}, #8a1815)`,
+          border: `3px solid ${CHROME_FLAT}`, borderRadius: '6px',
+          clipPath: 'polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Starburst size={32} color="white" />
+        </div>
+      </div>
+
       {/* Domed top */}
       <div style={{ position: 'relative', height: archH, overflow: 'hidden' }}>
-        {BANDS.map((b, i) => (
-          <div key={i} style={{
-            position: 'absolute', width: b.r * 2, height: b.r * 2, borderRadius: '50%',
-            top: archTopPad + BANDS[0].r - b.r, left: cx - b.r, background: b.color,
-          }} />
-        ))}
-        {/* Cream title fill, inset inside the innermost chrome band */}
+        {BANDS.map((b, i) => {
+          const vr = b.r * DOME_RATIO
+          return (
+            <div key={i} style={{
+              position: 'absolute', width: b.r * 2, height: vr * 2, borderRadius: '50%',
+              top: archTopPad + maxVR - vr, left: cx - b.r, background: b.color,
+            }} />
+          )
+        })}
         <div style={{
-          position: 'absolute', width: CONTENT_R * 2, height: CONTENT_R * 2, borderRadius: '50%',
-          top: archTopPad + BANDS[0].r - CONTENT_R, left: cx - CONTENT_R, background: CREAM,
+          position: 'absolute', width: CONTENT_R * 2, height: CONTENT_R * DOME_RATIO * 2, borderRadius: '50%',
+          top: archTopPad + maxVR - CONTENT_R * DOME_RATIO, left: cx - CONTENT_R, background: CREAM,
         }} />
+        {/* Small star sparkles beside the title */}
+        <div style={{ position: 'absolute', top: archH - 66, left: cx - 210 }}><Starburst size={16} color={RED} /></div>
+        <div style={{ position: 'absolute', top: archH - 66, right: cx - 210 }}><Starburst size={16} color={RED} /></div>
       </div>
+
+      {/* Chrome pillars at the springing point of the dome */}
+      <div style={{ position: 'absolute', top: archH - 24, left: cx - BANDS[0].r - 6, zIndex: 4 }}><ChromePillar /></div>
+      <div style={{ position: 'absolute', top: archH - 24, right: cx - BANDS[0].r - 6, zIndex: 4 }}><ChromePillar /></div>
 
       {/* Straight sides continuing down from the dome */}
       <div style={{ position: 'relative' }}>
         {BANDS.map((b, i) => {
           const inner = i < BANDS.length - 1 ? BANDS[i + 1].r : CONTENT_R
-          return (
-            <div key={`l${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: cx - b.r, width: b.r - inner, background: b.color }} />
-          )
+          return <div key={`l${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: cx - b.r, width: b.r - inner, background: b.color }} />
         })}
         {BANDS.map((b, i) => {
           const inner = i < BANDS.length - 1 ? BANDS[i + 1].r : CONTENT_R
-          return (
-            <div key={`r${i}`} style={{ position: 'absolute', top: 0, bottom: 0, right: cx - b.r, width: b.r - inner, background: b.color }} />
-          )
+          return <div key={`r${i}`} style={{ position: 'absolute', top: 0, bottom: 0, right: cx - b.r, width: b.r - inner, background: b.color }} />
         })}
         {/* Black cabinet interior */}
         <div style={{ position: 'relative', margin: `0 ${FRAME_MAX / 2 - CONTENT_R}px`, background: BLACK_PANEL, minHeight: 40 }}>
           {children}
         </div>
       </div>
+
+      {/* Speaker grilles, footer flourish */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 20px 0' }}>
+        <SpeakerGrille size={90} />
+        <SpeakerGrille size={90} />
+      </div>
     </div>
   )
 }
 
-// Pill-shaped list button — cream pill with a small red-dot bullet, on a
-// black panel, matching the reference's Genres/Decades list style
+// Pill-shaped list button
 function PillButton({ label, dotColor, onClick, disabled, loading }: {
   label: string; dotColor: string; onClick: () => void; disabled?: boolean; loading?: boolean
 }) {
@@ -104,6 +174,24 @@ function PillButton({ label, dotColor, onClick, disabled, loading }: {
         : <span style={{ width: 12, height: 12, borderRadius: '50%', background: dotColor, flexShrink: 0, boxShadow: `0 0 6px ${dotColor}` }} />}
       <span style={{ fontSize: 15, fontWeight: 800, color: '#241a08' }}>{label}</span>
     </button>
+  )
+}
+
+// Double-line section divider with a center label, matching the reference's
+// "MOST POPULAR" banner treatment
+function SectionDivider({ label, color }: { label: string; color: string }) {
+  const lines = (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div style={{ height: 2, background: `${color}88` }} />
+      <div style={{ height: 2, background: `${color}44` }} />
+    </div>
+  )
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+      {lines}
+      <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color, whiteSpace: 'nowrap' }}>{label}</p>
+      {lines}
+    </div>
   )
 }
 
@@ -327,6 +415,10 @@ export default function DinerHomeView() {
             <p style={{ fontSize: 14, letterSpacing: '0.3em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
             <h1 className="font-retro" style={{ fontSize: 42, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
             <p style={{ fontSize: 22, letterSpacing: '0.35em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, opacity: 0.6 }}>
+              <div style={{ flex: 1, height: 2, background: RED }} />
+              <div style={{ flex: 1, height: 2, background: RED }} />
+            </div>
           </div>
 
           {/* Turntable box */}
@@ -345,123 +437,126 @@ export default function DinerHomeView() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[220px_1fr_220px] gap-3" style={{ padding: '0 16px 16px' }}>
+          {/* Genres | Now Playing | Decades — one continuous instrument panel with dividers */}
+          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}33` }}>
+            <div className="grid grid-cols-[220px_1fr_220px]">
 
-            {/* Genres panel */}
-            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${RED}44`, padding: '14px 14px', display: 'flex', flexDirection: 'column' }}>
-              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>GENRES</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {DINER_GENRES.map((g) => (
-                  <PillButton key={g.label} label={g.label} dotColor={RED} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre} loading={loadingGenre === g.label} />
-                ))}
-              </div>
-            </div>
-
-            {/* Now Playing panel */}
-            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}44`, padding: '14px 18px' }}>
-              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: TEAL_LIGHT, marginBottom: 10 }}>♫ NOW PLAYING ♫</p>
-
-              <div onClick={() => setFullscreenOpen(true)} style={{ borderRadius: 10, background: '#000', border: `2px solid ${TEAL}55`, padding: '16px 14px', textAlign: 'center', marginBottom: 14, cursor: 'pointer' }}>
-                <h2 className="font-retro" style={{ fontSize: 18, fontStyle: 'italic', fontWeight: 700, color: TEAL_LIGHT, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack?.name ?? 'No track playing'}</h2>
-                <p style={{ fontSize: 13, color: TEAL_LIGHT, opacity: 0.7, marginTop: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                  {currentTrack ? currentTrack.artists.map(a => a.name).join(', ') : 'Select a song below'}
-                </p>
-              </div>
-
-              {currentTrack && (
-                <div style={{ marginBottom: 14 }}>
-                  <div style={{ height: 5, background: 'rgba(240,228,200,0.1)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
-                    <div style={{ width: `${progress}%`, height: '100%', background: RED, borderRadius: 99, transition: 'width 0.5s linear' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(progressMs)}</span>
-                    <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(durationMs)}</span>
-                  </div>
+              {/* Genres column */}
+              <div style={{ padding: '16px 14px', borderRight: `1px solid ${CHROME_FLAT}22` }}>
+                <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>GENRES</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {DINER_GENRES.map((g) => (
+                    <PillButton key={g.label} label={g.label} dotColor={RED} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre} loading={loadingGenre === g.label} />
+                  ))}
                 </div>
-              )}
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
-                <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
-                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" /></svg>
-                </button>
-                <button onClick={togglePlay} className="active:scale-95" style={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(180deg, #ff9a8a, ${RED})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${CHROME_FLAT}`, boxShadow: `0 0 16px ${RED}88` }}>
-                  {isPlaying
-                    ? <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
-                    : <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
-                </button>
-                <button onClick={handleSkip} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
-                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 2.5L8 7L2 11.5V2.5Z" fill="currentColor" /><rect x="9" y="2.5" width="3" height="9" rx="1" fill="currentColor" /></svg>
-                </button>
               </div>
 
-              {/* Search with live dropdown */}
-              <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', height: 44, background: '#000', borderRadius: (inlineDropdown.length > 0 || searchError || searchLoading) ? '18px 18px 0 0' : 22, border: `2px solid ${TEAL}44` }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? TEAL_LIGHT : 'rgba(240,228,200,0.35)', flexShrink: 0 }}>
-                    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                  <input
-                    type="text"
-                    value={inlineQuery}
-                    onChange={e => { setInlineQuery(e.target.value); inlineQueryRef.current = e.target.value }}
-                    onFocus={() => {
-                      setOnKeyPress((key) => {
-                        const q = inlineQueryRef.current
-                        if (key === 'BACKSPACE') { const next = q.slice(0, -1); inlineQueryRef.current = next; setInlineQuery(next) }
-                        else if (key === 'CLEAR') { inlineQueryRef.current = ''; setInlineQuery(''); setInlineDropdown([]); setSearchError('') }
-                        else { const next = q + key; inlineQueryRef.current = next; setInlineQuery(next) }
-                      })
-                      setKeyboardVisible(true)
-                    }}
-                    placeholder="Search for songs, artists, albums…"
-                    inputMode="none"
-                    className="flex-1 bg-transparent outline-none"
-                    style={{ fontSize: 13, color: CREAM, caretColor: TEAL_LIGHT }}
-                  />
-                  {inlineQuery && <button onClick={() => { setInlineQuery(''); setInlineDropdown([]); setSearchError('') }} style={{ color: 'rgba(240,228,200,0.4)' }}>
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                  </button>}
+              {/* Now Playing column */}
+              <div style={{ padding: '16px 18px' }}>
+                <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: TEAL_LIGHT, marginBottom: 10 }}>♫ NOW PLAYING ♫</p>
+
+                <div onClick={() => setFullscreenOpen(true)} style={{ borderRadius: 10, background: '#000', border: `2px solid ${TEAL}55`, padding: '16px 14px', textAlign: 'center', marginBottom: 14, cursor: 'pointer' }}>
+                  <h2 className="font-retro" style={{ fontSize: 18, fontStyle: 'italic', fontWeight: 700, color: TEAL_LIGHT, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack?.name ?? 'No track playing'}</h2>
+                  <p style={{ fontSize: 13, color: TEAL_LIGHT, opacity: 0.7, marginTop: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                    {currentTrack ? currentTrack.artists.map(a => a.name).join(', ') : 'Select a song below'}
+                  </p>
                 </div>
 
-                {(searchLoading || searchError) && inlineDropdown.length === 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '10px 14px' }}>
-                    <p style={{ fontSize: 12, color: searchError ? '#ff8a8a' : 'rgba(240,228,200,0.4)' }}>{searchLoading ? 'Searching…' : searchError}</p>
+                {currentTrack && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ height: 5, background: 'rgba(240,228,200,0.1)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: RED, borderRadius: 99, transition: 'width 0.5s linear' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(progressMs)}</span>
+                      <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(durationMs)}</span>
+                    </div>
                   </div>
                 )}
 
-                {inlineDropdown.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
-                    {inlineDropdown.map((entry, i) => {
-                      const isTrack = entry.type === 'track'
-                      const isArtist = entry.type === 'artist'
-                      const item = entry.item as SpotifyTrack & SpotifyArtist & SpotifyAlbum
-                      const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
-                      const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
-                      return (
-                        <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(42,138,138,0.14)] active:scale-[0.98] transition-all duration-150"
-                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', width: '100%', textAlign: 'left', background: 'rgba(42,138,138,0.06)', borderBottom: i < inlineDropdown.length - 1 ? `1px solid ${TEAL}33` : 'none' }}>
-                          <div style={{ width: 40, height: 40, borderRadius: isArtist ? '50%' : 6, overflow: 'hidden', flexShrink: 0, background: 'rgba(42,138,138,0.1)', border: `1px solid ${TEAL}55` }}>
-                            {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                            <p style={{ fontSize: 12, color: TEAL_LIGHT, marginTop: 1 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
+                  <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" /></svg>
+                  </button>
+                  <button onClick={togglePlay} className="active:scale-95" style={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(180deg, #ff9a8a, ${RED})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${CHROME_FLAT}`, boxShadow: `0 0 16px ${RED}88` }}>
+                    {isPlaying
+                      ? <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
+                      : <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
+                  </button>
+                  <button onClick={handleSkip} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
+                    <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 2.5L8 7L2 11.5V2.5Z" fill="currentColor" /><rect x="9" y="2.5" width="3" height="9" rx="1" fill="currentColor" /></svg>
+                  </button>
+                </div>
 
-            {/* Decades panel */}
-            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${TEAL}44`, padding: '14px 14px', display: 'flex', flexDirection: 'column' }}>
-              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>DECADES</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {DECADES.map((dec) => (
-                  <PillButton key={dec} label={`'${dec}`} dotColor={RED} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade} loading={loadingDecade === dec} />
-                ))}
+                {/* Search with live dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', height: 44, background: '#000', borderRadius: (inlineDropdown.length > 0 || searchError || searchLoading) ? '18px 18px 0 0' : 22, border: `2px solid ${TEAL}44` }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? TEAL_LIGHT : 'rgba(240,228,200,0.35)', flexShrink: 0 }}>
+                      <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                    <input
+                      type="text"
+                      value={inlineQuery}
+                      onChange={e => { setInlineQuery(e.target.value); inlineQueryRef.current = e.target.value }}
+                      onFocus={() => {
+                        setOnKeyPress((key) => {
+                          const q = inlineQueryRef.current
+                          if (key === 'BACKSPACE') { const next = q.slice(0, -1); inlineQueryRef.current = next; setInlineQuery(next) }
+                          else if (key === 'CLEAR') { inlineQueryRef.current = ''; setInlineQuery(''); setInlineDropdown([]); setSearchError('') }
+                          else { const next = q + key; inlineQueryRef.current = next; setInlineQuery(next) }
+                        })
+                        setKeyboardVisible(true)
+                      }}
+                      placeholder="Search for songs, artists, albums…"
+                      inputMode="none"
+                      className="flex-1 bg-transparent outline-none"
+                      style={{ fontSize: 13, color: CREAM, caretColor: TEAL_LIGHT }}
+                    />
+                    {inlineQuery && <button onClick={() => { setInlineQuery(''); setInlineDropdown([]); setSearchError('') }} style={{ color: 'rgba(240,228,200,0.4)' }}>
+                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                    </button>}
+                  </div>
+
+                  {(searchLoading || searchError) && inlineDropdown.length === 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '10px 14px' }}>
+                      <p style={{ fontSize: 12, color: searchError ? '#ff8a8a' : 'rgba(240,228,200,0.4)' }}>{searchLoading ? 'Searching…' : searchError}</p>
+                    </div>
+                  )}
+
+                  {inlineDropdown.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
+                      {inlineDropdown.map((entry, i) => {
+                        const isTrack = entry.type === 'track'
+                        const isArtist = entry.type === 'artist'
+                        const item = entry.item as SpotifyTrack & SpotifyArtist & SpotifyAlbum
+                        const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
+                        const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
+                        return (
+                          <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(42,138,138,0.14)] active:scale-[0.98] transition-all duration-150"
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', width: '100%', textAlign: 'left', background: 'rgba(42,138,138,0.06)', borderBottom: i < inlineDropdown.length - 1 ? `1px solid ${TEAL}33` : 'none' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: isArtist ? '50%' : 6, overflow: 'hidden', flexShrink: 0, background: 'rgba(42,138,138,0.1)', border: `1px solid ${TEAL}55` }}>
+                              {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                              <p style={{ fontSize: 12, color: TEAL_LIGHT, marginTop: 1 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Decades column */}
+              <div style={{ padding: '16px 14px', borderLeft: `1px solid ${CHROME_FLAT}22` }}>
+                <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>DECADES</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {DECADES.map((dec) => (
+                    <PillButton key={dec} label={`'${dec}`} dotColor={RED} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade} loading={loadingDecade === dec} />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -471,11 +566,7 @@ export default function DinerHomeView() {
 
             {mostPopular.length > 0 && (
               <div style={{ marginBottom: 22 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ flex: 1, height: 2, background: `${RED}55` }} />
-                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: RED_LIGHT, whiteSpace: 'nowrap' }}>MOST POPULAR</p>
-                  <div style={{ flex: 1, height: 2, background: `${RED}55` }} />
-                </div>
+                <SectionDivider label="MOST POPULAR" color={RED_LIGHT} />
                 <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
                   {mostPopular.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
@@ -493,11 +584,7 @@ export default function DinerHomeView() {
 
             {popularArtists.length > 0 && (
               <div style={{ marginBottom: 22 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ flex: 1, height: 2, background: `${TEAL}55` }} />
-                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, whiteSpace: 'nowrap' }}>POPULAR ARTISTS</p>
-                  <div style={{ flex: 1, height: 2, background: `${TEAL}55` }} />
-                </div>
+                <SectionDivider label="POPULAR ARTISTS" color={TEAL_LIGHT} />
                 <div style={{ display: 'flex', gap: 16, overflow: 'hidden' }}>
                   {popularArtists.map(artist => (
                     <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
@@ -518,11 +605,7 @@ export default function DinerHomeView() {
 
             {playHistory.length > 0 && (
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ flex: 1, height: 2, background: 'rgba(240,228,200,0.2)' }} />
-                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: CREAM, whiteSpace: 'nowrap' }}>RECENTLY PLAYED</p>
-                  <div style={{ flex: 1, height: 2, background: 'rgba(240,228,200,0.2)' }} />
-                </div>
+                <SectionDivider label="RECENTLY PLAYED" color={CREAM} />
                 <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
                   {playHistory.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
