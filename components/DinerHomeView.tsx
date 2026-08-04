@@ -24,94 +24,85 @@ const RED_LIGHT = '#ff6b5a'
 const TEAL = '#2a8a8a'
 const TEAL_LIGHT = '#5cd6d6'
 const CREAM = '#f0e4c8'
-const CHROME = 'linear-gradient(180deg, #e8dcc0 0%, #c9b888 25%, #f5ecd0 50%, #a89060 75%, #dcc898 100%)'
+const CHROME_FLAT = '#c9b888'
+const BLACK_PANEL = '#0e0800'
 
-// Solid chrome-plated card — opaque diner "enamel plate" look, not a glow panel
-function dinerCard(borderColor: string) {
-  return {
-    borderRadius: 16,
-    background: 'linear-gradient(180deg, #241208 0%, #180a04 100%)',
-    border: `2px solid ${borderColor}`,
-    boxShadow: `0 6px 0 rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`,
-  } as React.CSSProperties
-}
+const FRAME_MAX = 1000
+// Concentric bands, outermost first — red, cream, teal, chrome, matching the
+// reference's picture-frame border. Each number is the outer radius of that band.
+const BANDS = [
+  { color: RED, r: 480 },
+  { color: CREAM, r: 464 },
+  { color: TEAL, r: 448 },
+  { color: CHROME_FLAT, r: 434 },
+]
+const CONTENT_R = 420 // inner edge — where the black cabinet interior begins
 
-// Warm bulb dot, positioned along a ring's arc — the diner equivalent of Modern's neon glow
-function Bulb({ x, y }: { x: number; y: number }) {
+// The flat rainbow picture-frame border — a domed top (built from stacked
+// clipped circles) that continues as straight vertical strips down both
+// sides for the rest of the scrolling content, exactly like the reference.
+function DinerFrame({ children }: { children: React.ReactNode }) {
+  const archTopPad = 14
+  const archH = archTopPad + BANDS[0].r
+  const cx = FRAME_MAX / 2
+
   return (
-    <div style={{
-      position: 'absolute', left: x - 6, top: y - 6, width: 12, height: 12, borderRadius: '50%',
-      background: 'radial-gradient(circle at 35% 30%, #fff8e0, #ffce6b 60%, #e8a020 100%)',
-      boxShadow: '0 0 10px 3px rgba(255,206,107,0.7), 0 0 3px rgba(255,255,255,0.9)',
-    }} />
-  )
-}
+    <div style={{ position: 'relative', width: '100%', maxWidth: FRAME_MAX, margin: '0 auto' }}>
+      {/* Domed top */}
+      <div style={{ position: 'relative', height: archH, overflow: 'hidden' }}>
+        {BANDS.map((b, i) => (
+          <div key={i} style={{
+            position: 'absolute', width: b.r * 2, height: b.r * 2, borderRadius: '50%',
+            top: archTopPad + BANDS[0].r - b.r, left: cx - b.r, background: b.color,
+          }} />
+        ))}
+        {/* Cream title fill, inset inside the innermost chrome band */}
+        <div style={{
+          position: 'absolute', width: CONTENT_R * 2, height: CONTENT_R * 2, borderRadius: '50%',
+          top: archTopPad + BANDS[0].r - CONTENT_R, left: cx - CONTENT_R, background: CREAM,
+        }} />
+      </div>
 
-// Diner arch — chrome/red/teal rings with warm bulbs instead of Modern's waveform hero
-function DinerArch({ albumArt, isPlaying }: { albumArt?: string; isPlaying: boolean }) {
-  const size = 620
-  const vR = size / 2
-  const rings = [
-    { gap: 56, bg: CHROME, bulbs: false },
-    { gap: 42, bg: RED, bulbs: true },
-    { gap: 28, bg: TEAL, bulbs: true },
-    { gap: 14, bg: CHROME, bulbs: false },
-  ]
-  return (
-    <div style={{ position: 'relative', width: '100%', height: size + 60, flexShrink: 0, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
-      <div style={{ position: 'relative', width: size + 120, height: size + 60 }}>
-        {rings.map((r, i) => {
-          const d = (vR + r.gap) * 2
-          const cx = (size + 120) / 2
-          const cy = size / 2 + 10
-          const bulbs = []
-          if (r.bulbs) {
-            const radius = vR + r.gap
-            for (let a = 200; a <= 340; a += 11) {
-              const rad = (a * Math.PI) / 180
-              bulbs.push(<Bulb key={a} x={cx + radius * Math.cos(rad)} y={cy + radius * Math.sin(rad)} />)
-            }
-          }
+      {/* Straight sides continuing down from the dome */}
+      <div style={{ position: 'relative' }}>
+        {BANDS.map((b, i) => {
+          const inner = i < BANDS.length - 1 ? BANDS[i + 1].r : CONTENT_R
           return (
-            <div key={i}>
-              <div style={{
-                position: 'absolute', width: d, height: d, borderRadius: '50%',
-                top: cy - (vR + r.gap), left: cx - (vR + r.gap),
-                background: r.bg, opacity: r.bulbs ? 0.9 : 1,
-              }} />
-              {bulbs}
-            </div>
+            <div key={`l${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: cx - b.r, width: b.r - inner, background: b.color }} />
           )
         })}
-        {/* Vinyl */}
-        <div style={{ position: 'absolute', top: size / 2 + 10 - vR + 20, left: (size + 120) / 2 - vR + 20, zIndex: 2 }}>
-          <SpinningVinyl albumArt={albumArt} isPlaying={isPlaying} size={size - 40} />
+        {BANDS.map((b, i) => {
+          const inner = i < BANDS.length - 1 ? BANDS[i + 1].r : CONTENT_R
+          return (
+            <div key={`r${i}`} style={{ position: 'absolute', top: 0, bottom: 0, right: cx - b.r, width: b.r - inner, background: b.color }} />
+          )
+        })}
+        {/* Black cabinet interior */}
+        <div style={{ position: 'relative', margin: `0 ${FRAME_MAX / 2 - CONTENT_R}px`, background: BLACK_PANEL, minHeight: 40 }}>
+          {children}
         </div>
       </div>
     </div>
   )
 }
 
-// Glossy filled button — same technique as Modern's genre/decade buttons, red or teal
-function DinerButton({ label, color, colorLight, colorDark, textColor, onClick, disabled, loading }: {
-  label: string; color: string; colorLight: string; colorDark: string; textColor: string
-  onClick: () => void; disabled?: boolean; loading?: boolean
+// Pill-shaped list button — cream pill with a small red-dot bullet, on a
+// black panel, matching the reference's Genres/Decades list style
+function PillButton({ label, dotColor, onClick, disabled, loading }: {
+  label: string; dotColor: string; onClick: () => void; disabled?: boolean; loading?: boolean
 }) {
   return (
     <button onClick={onClick} disabled={disabled}
       className="active:scale-[0.97] transition-transform"
       style={{
-        position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '15px 10px',
-        borderRadius: 14, border: 'none', overflow: 'hidden',
-        background: `linear-gradient(180deg, ${colorLight} 0%, ${color} 45%, ${colorDark} 100%)`,
-        boxShadow: `0 0 14px ${color}88, inset 0 -2px 4px rgba(0,0,0,0.25)`,
-        opacity: disabled && !loading ? 0.35 : 1,
-        transition: 'opacity 0.2s',
+        display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '13px 18px',
+        borderRadius: 999, border: 'none', background: CREAM,
+        opacity: disabled && !loading ? 0.4 : 1, transition: 'opacity 0.2s',
       }}>
-      <span style={{ position: 'absolute', top: 2, left: 2, right: 2, height: '42%', borderRadius: '12px 12px 50% 50% / 12px 12px 100% 100%', background: 'rgba(255,255,255,0.4)', filter: 'blur(2px)', pointerEvents: 'none' }} />
       {loading
-        ? <span className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%', position: 'relative' }} />
-        : <span style={{ fontSize: 17, fontWeight: 800, color: textColor, position: 'relative' }}>{label}</span>}
+        ? <span className="skeleton" style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0 }} />
+        : <span style={{ width: 12, height: 12, borderRadius: '50%', background: dotColor, flexShrink: 0, boxShadow: `0 0 6px ${dotColor}` }} />}
+      <span style={{ fontSize: 15, fontWeight: 800, color: '#241a08' }}>{label}</span>
     </button>
   )
 }
@@ -312,193 +303,188 @@ export default function DinerHomeView() {
   }, [topArtistIds.join(','), accessToken])
 
   return (
-    <div className="h-full flex flex-col overflow-hidden" style={{ color: CREAM, background: 'radial-gradient(ellipse at 50% 0%, rgba(120,40,20,0.2) 0%, transparent 55%), #170b06' }}>
-
-      {/* ── Top bar ── */}
-      <div style={{ height: 10, background: CHROME, opacity: 0.85, flexShrink: 0 }} />
-      <div style={{ display: 'flex', height: 12, flexShrink: 0 }}>
-        <div style={{ flex: 1, background: `linear-gradient(90deg, transparent, ${RED}77, transparent)` }} />
-        <div style={{ flex: 1, background: 'linear-gradient(90deg, transparent, #f0e4c877, transparent)' }} />
-        <div style={{ flex: 1, background: `linear-gradient(90deg, transparent, ${TEAL}77, transparent)` }} />
-      </div>
+    <div className="h-full flex flex-col overflow-hidden" style={{ color: CREAM, background: '#0a0500' }}>
 
       {/* ── Header ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1000, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: FRAME_MAX, margin: '0 auto', padding: '20px 16px 8px' }}>
         <div style={{ justifySelf: 'start' }}>
           <ThemeSwitcher color="rgba(240,228,200,0.55)" menuBg="#1c0f06" accentColor={RED_LIGHT} border={`1px solid ${RED}55`} />
         </div>
-        <div style={{ textAlign: 'center', lineHeight: 1 }}>
-          <p style={{ fontSize: 15, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(240,228,200,0.4)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>
-          <h1 className="font-retro" style={{
-            fontSize: 52, fontStyle: 'italic', fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.05, color: RED_LIGHT,
-            textShadow: `0 0 14px ${RED}aa, 0 0 40px ${RED}55`,
-          }}>
-            The Outside Inn
-          </h1>
-        </div>
+        <div />
         <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(240,228,200,0.4)', padding: 8 }}>
-          <svg width="26" height="26" viewBox="0 0 14 14" fill="none">
+          <svg width="24" height="24" viewBox="0 0 14 14" fill="none">
             <path d="M5 2H2.5A1.5 1.5 0 001 3.5v7A1.5 1.5 0 002.5 12H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
             <path d="M9 10l3-3-3-3M12 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       </div>
 
-      {/* ── Chrome arch with warm bulbs + vinyl ── */}
-      <DinerArch albumArt={albumArt} isPlaying={isPlaying} />
-
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
+        <DinerFrame>
 
-        <div className="grid grid-cols-[260px_1fr_260px] gap-4 max-w-[1000px] mx-auto" style={{ padding: '18px 16px 24px' }}>
+          {/* Title band, sitting inside the dome curve */}
+          <div style={{ textAlign: 'center', padding: '18px 40px 14px' }}>
+            <p style={{ fontSize: 14, letterSpacing: '0.3em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
+            <h1 className="font-retro" style={{ fontSize: 42, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
+            <p style={{ fontSize: 22, letterSpacing: '0.35em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
+          </div>
 
-          {/* Genres panel */}
-          <div style={{ ...dinerCard(RED), padding: '20px 18px' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: RED_LIGHT, marginBottom: 14 }}>GENRES</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {DINER_GENRES.map((g) => (
-                <DinerButton key={g.label} label={g.label} color={RED} colorLight="#ff9a8a" colorDark="#6a1210" textColor="white"
-                  onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre} loading={loadingGenre === g.label} />
+          {/* Turntable box */}
+          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}44`, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ width: 70 - i * 2, height: 5, borderRadius: 2, background: `rgba(240,228,200,${0.15 + i * 0.03})`, marginLeft: i }} />
               ))}
+            </div>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <SpinningVinyl albumArt={albumArt} isPlaying={isPlaying} size={130} />
+            </div>
+            <div style={{ flexShrink: 0, borderRadius: 10, border: `2px solid ${RED}`, background: CREAM, padding: '8px 14px', textAlign: 'center' }}>
+              <p style={{ fontSize: 20, fontWeight: 800, color: RED, lineHeight: 1 }}>45</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: '#241a08', letterSpacing: '0.05em' }}>RPM</p>
             </div>
           </div>
 
-          {/* Now Playing panel */}
-          <div style={{ ...dinerCard(CREAM), padding: '22px 24px' }}>
-            <p style={{ textAlign: 'center', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,228,200,0.4)', marginBottom: 16, fontWeight: 600 }}>Now Playing</p>
+          <div className="grid grid-cols-[220px_1fr_220px] gap-3" style={{ padding: '0 16px 16px' }}>
 
-            <div onClick={() => setFullscreenOpen(true)} style={{ width: 190, height: 190, margin: '0 auto 16px', borderRadius: 12, overflow: 'hidden', background: 'rgba(240,228,200,0.05)', border: `2px solid ${CREAM}33`, cursor: 'pointer' }}>
-              {albumArt
-                ? <img src={albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="48" height="48" viewBox="0 0 28 28" fill="none" style={{ opacity: 0.2, color: CREAM }}><circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="1.5" /><circle cx="14" cy="14" r="3" stroke="currentColor" strokeWidth="1.5" /></svg>
-                  </div>}
-            </div>
-
-            <div style={{ textAlign: 'center', marginBottom: 18 }}>
-              <h2 className="font-retro" style={{ fontSize: 21, fontStyle: 'italic', fontWeight: 700, color: CREAM, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack?.name ?? 'No track playing'}</h2>
-              <p style={{ fontSize: 14, color: RED_LIGHT, marginTop: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                {currentTrack ? currentTrack.artists.map((a, i) => (
-                  <span key={a.id}>{i > 0 && ' & '}<button onClick={() => { setActiveArtist({ id: a.id, name: a.name }); setActiveView('artist') }} className="hover:underline">{a.name}</button></span>
-                )) : 'Select a song below'}
-              </p>
-            </div>
-
-            {currentTrack && (
-              <div style={{ marginBottom: 18 }}>
-                <div style={{ height: 6, background: 'rgba(240,228,200,0.1)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
-                  <div style={{ width: `${progress}%`, height: '100%', background: `linear-gradient(90deg, ${RED}, ${RED_LIGHT})`, borderRadius: 99, transition: 'width 0.5s linear' }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, color: 'rgba(240,228,200,0.45)' }}>{formatDuration(progressMs)}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(240,228,200,0.45)' }}>{formatDuration(durationMs)}</span>
-                </div>
+            {/* Genres panel */}
+            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${RED}44`, padding: '14px 14px', display: 'flex', flexDirection: 'column' }}>
+              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>GENRES</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {DINER_GENRES.map((g) => (
+                  <PillButton key={g.label} label={g.label} dotColor={RED} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre} loading={loadingGenre === g.label} />
+                ))}
               </div>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 20 }}>
-              <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(180deg, #241a10, #140c06)', border: `2px solid ${CREAM}33`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" opacity="0.7" /></svg>
-              </button>
-              <button onClick={togglePlay} className="active:scale-95" style={{ width: 66, height: 66, borderRadius: '50%', background: `linear-gradient(180deg, #ff9a8a, ${RED} 45%, #6a1210 100%)`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 22px ${RED}88` }}>
-                {isPlaying
-                  ? <svg width="22" height="22" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
-                  : <svg width="22" height="22" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
-              </button>
-              <button onClick={handleSkip} className="active:scale-95 transition-transform" style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(180deg, #241a10, #140c06)', border: `2px solid ${CREAM}33`, color: CREAM, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><path d="M2 2.5L8 7L2 11.5V2.5Z" fill="currentColor" opacity="0.7" /><rect x="9" y="2.5" width="3" height="9" rx="1" fill="currentColor" /></svg>
-              </button>
             </div>
 
-            {/* Search with live dropdown */}
-            <div style={{ position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 16px', height: 48, background: '#100804', borderRadius: (inlineDropdown.length > 0 || searchError || searchLoading) ? '20px 20px 0 0' : 24, border: `2px solid ${RED}55` }}>
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? RED_LIGHT : 'rgba(240,228,200,0.35)', flexShrink: 0 }}>
-                  <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-                <input
-                  type="text"
-                  value={inlineQuery}
-                  onChange={e => { setInlineQuery(e.target.value); inlineQueryRef.current = e.target.value }}
-                  onFocus={() => {
-                    setOnKeyPress((key) => {
-                      const q = inlineQueryRef.current
-                      if (key === 'BACKSPACE') { const next = q.slice(0, -1); inlineQueryRef.current = next; setInlineQuery(next) }
-                      else if (key === 'CLEAR') { inlineQueryRef.current = ''; setInlineQuery(''); setInlineDropdown([]); setSearchError('') }
-                      else { const next = q + key; inlineQueryRef.current = next; setInlineQuery(next) }
-                    })
-                    setKeyboardVisible(true)
-                  }}
-                  placeholder="Search for songs, artists, albums…"
-                  inputMode="none"
-                  className="flex-1 bg-transparent outline-none"
-                  style={{ fontSize: 14, color: CREAM, caretColor: RED_LIGHT }}
-                />
-                {inlineQuery && <button onClick={() => { setInlineQuery(''); setInlineDropdown([]); setSearchError('') }} style={{ color: 'rgba(240,228,200,0.4)' }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-                </button>}
+            {/* Now Playing panel */}
+            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}44`, padding: '14px 18px' }}>
+              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: TEAL_LIGHT, marginBottom: 10 }}>♫ NOW PLAYING ♫</p>
+
+              <div onClick={() => setFullscreenOpen(true)} style={{ borderRadius: 10, background: '#000', border: `2px solid ${TEAL}55`, padding: '16px 14px', textAlign: 'center', marginBottom: 14, cursor: 'pointer' }}>
+                <h2 className="font-retro" style={{ fontSize: 18, fontStyle: 'italic', fontWeight: 700, color: TEAL_LIGHT, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{currentTrack?.name ?? 'No track playing'}</h2>
+                <p style={{ fontSize: 13, color: TEAL_LIGHT, opacity: 0.7, marginTop: 4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                  {currentTrack ? currentTrack.artists.map(a => a.name).join(', ') : 'Select a song below'}
+                </p>
               </div>
 
-              {(searchLoading || searchError) && inlineDropdown.length === 0 && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#1c0f06', border: `2px solid ${RED}55`, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '12px 16px' }}>
-                  <p style={{ fontSize: 13, color: searchError ? '#ff8a8a' : 'rgba(240,228,200,0.4)' }}>{searchLoading ? 'Searching…' : searchError}</p>
+              {currentTrack && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ height: 5, background: 'rgba(240,228,200,0.1)', borderRadius: 99, overflow: 'hidden', marginBottom: 6 }}>
+                    <div style={{ width: `${progress}%`, height: '100%', background: RED, borderRadius: 99, transition: 'width 0.5s linear' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(progressMs)}</span>
+                    <span style={{ fontSize: 11, color: 'rgba(240,228,200,0.4)' }}>{formatDuration(durationMs)}</span>
+                  </div>
                 </div>
               )}
 
-              {inlineDropdown.length > 0 && (
-                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#1c0f06', border: `2px solid ${RED}55`, borderTop: 'none', borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
-                  {inlineDropdown.map((entry, i) => {
-                    const isTrack = entry.type === 'track'
-                    const isArtist = entry.type === 'artist'
-                    const item = entry.item as SpotifyTrack & SpotifyArtist & SpotifyAlbum
-                    const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
-                    const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
-                    return (
-                      <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(201,48,44,0.14)] active:scale-[0.98] transition-all duration-150"
-                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%', textAlign: 'left', background: 'rgba(201,48,44,0.06)', borderBottom: i < inlineDropdown.length - 1 ? `1px solid ${RED}33` : 'none' }}>
-                        <div style={{ width: 48, height: 48, borderRadius: isArtist ? '50%' : 8, overflow: 'hidden', flexShrink: 0, background: 'rgba(201,48,44,0.1)', border: `1px solid ${RED}55` }}>
-                          {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 16, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                          <p style={{ fontSize: 13, color: RED_LIGHT, marginTop: 2 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
-                        </div>
-                        <span style={{ fontSize: 11, color: RED_LIGHT, fontFamily: 'monospace', textTransform: 'uppercase', flexShrink: 0, padding: '3px 8px', borderRadius: 20, border: `1px solid ${RED}55` }}>{entry.type}</span>
-                      </button>
-                    )
-                  })}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
+                <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
+                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" /></svg>
+                </button>
+                <button onClick={togglePlay} className="active:scale-95" style={{ width: 60, height: 60, borderRadius: '50%', background: `linear-gradient(180deg, #ff9a8a, ${RED})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${CHROME_FLAT}`, boxShadow: `0 0 16px ${RED}88` }}>
+                  {isPlaying
+                    ? <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
+                    : <svg width="20" height="20" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
+                </button>
+                <button onClick={handleSkip} className="active:scale-95 transition-transform" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(180deg, #9de8e8, ${TEAL})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${CHROME_FLAT}` }}>
+                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 2.5L8 7L2 11.5V2.5Z" fill="currentColor" /><rect x="9" y="2.5" width="3" height="9" rx="1" fill="currentColor" /></svg>
+                </button>
+              </div>
+
+              {/* Search with live dropdown */}
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', height: 44, background: '#000', borderRadius: (inlineDropdown.length > 0 || searchError || searchLoading) ? '18px 18px 0 0' : 22, border: `2px solid ${TEAL}44` }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ color: searchLoading ? TEAL_LIGHT : 'rgba(240,228,200,0.35)', flexShrink: 0 }}>
+                    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={inlineQuery}
+                    onChange={e => { setInlineQuery(e.target.value); inlineQueryRef.current = e.target.value }}
+                    onFocus={() => {
+                      setOnKeyPress((key) => {
+                        const q = inlineQueryRef.current
+                        if (key === 'BACKSPACE') { const next = q.slice(0, -1); inlineQueryRef.current = next; setInlineQuery(next) }
+                        else if (key === 'CLEAR') { inlineQueryRef.current = ''; setInlineQuery(''); setInlineDropdown([]); setSearchError('') }
+                        else { const next = q + key; inlineQueryRef.current = next; setInlineQuery(next) }
+                      })
+                      setKeyboardVisible(true)
+                    }}
+                    placeholder="Search for songs, artists, albums…"
+                    inputMode="none"
+                    className="flex-1 bg-transparent outline-none"
+                    style={{ fontSize: 13, color: CREAM, caretColor: TEAL_LIGHT }}
+                  />
+                  {inlineQuery && <button onClick={() => { setInlineQuery(''); setInlineDropdown([]); setSearchError('') }} style={{ color: 'rgba(240,228,200,0.4)' }}>
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  </button>}
                 </div>
-              )}
+
+                {(searchLoading || searchError) && inlineDropdown.length === 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '10px 14px' }}>
+                    <p style={{ fontSize: 12, color: searchError ? '#ff8a8a' : 'rgba(240,228,200,0.4)' }}>{searchLoading ? 'Searching…' : searchError}</p>
+                  </div>
+                )}
+
+                {inlineDropdown.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#0f0700', border: `2px solid ${TEAL}44`, borderTop: 'none', borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
+                    {inlineDropdown.map((entry, i) => {
+                      const isTrack = entry.type === 'track'
+                      const isArtist = entry.type === 'artist'
+                      const item = entry.item as SpotifyTrack & SpotifyArtist & SpotifyAlbum
+                      const thumb = isArtist ? item.images?.[0]?.url : isTrack ? item.album?.images?.[item.album.images.length - 1]?.url : item.images?.[0]?.url
+                      const sub = isTrack ? item.artists?.map((a: { name: string }) => a.name).join(', ') : isArtist ? 'Artist' : 'Album'
+                      return (
+                        <button key={i} onClick={() => handleInlineSelect(entry)} className="hover:bg-[rgba(42,138,138,0.14)] active:scale-[0.98] transition-all duration-150"
+                          style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', width: '100%', textAlign: 'left', background: 'rgba(42,138,138,0.06)', borderBottom: i < inlineDropdown.length - 1 ? `1px solid ${TEAL}33` : 'none' }}>
+                          <div style={{ width: 40, height: 40, borderRadius: isArtist ? '50%' : 6, overflow: 'hidden', flexShrink: 0, background: 'rgba(42,138,138,0.1)', border: `1px solid ${TEAL}55` }}>
+                            {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 14, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                            <p style={{ fontSize: 12, color: TEAL_LIGHT, marginTop: 1 }}>{sub}{isTrack ? ' · tap to queue' : ' · tap to browse'}</p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Decades panel */}
+            <div style={{ borderRadius: 14, background: '#050300', border: `1px solid ${TEAL}44`, padding: '14px 14px', display: 'flex', flexDirection: 'column' }}>
+              <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>DECADES</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {DECADES.map((dec) => (
+                  <PillButton key={dec} label={`'${dec}`} dotColor={RED} onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade} loading={loadingDecade === dec} />
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Decades panel */}
-          <div style={{ ...dinerCard(TEAL), padding: '20px 18px' }}>
-            <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, letterSpacing: '0.18em', color: TEAL_LIGHT, marginBottom: 14 }}>DECADES</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {DECADES.map((dec) => (
-                <DinerButton key={dec} label={`'${dec}`} color={TEAL} colorLight="#9de8e8" colorDark="#0f3a3a" textColor="white"
-                  onClick={() => handleDecadePlay(dec)} disabled={!!loadingDecade} loading={loadingDecade === dec} />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Most Popular + Popular Artists + Recently Played */}
-        <div style={{ width: '100%', padding: '0 16px 24px', maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ ...dinerCard(CREAM), padding: 24 }}>
+          {/* Most Popular + Popular Artists + Recently Played */}
+          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: `1px solid ${RED}33`, padding: '18px' }}>
 
             {mostPopular.length > 0 && (
-              <div style={{ marginBottom: 26 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: RED_LIGHT, marginBottom: 14, textAlign: 'center' }}>Most Popular</p>
-                <div style={{ display: 'flex', gap: 14, overflow: 'hidden' }}>
+              <div style={{ marginBottom: 22 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <div style={{ flex: 1, height: 2, background: `${RED}55` }} />
+                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: RED_LIGHT, whiteSpace: 'nowrap' }}>MOST POPULAR</p>
+                  <div style={{ flex: 1, height: 2, background: `${RED}55` }} />
+                </div>
+                <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
                   {mostPopular.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
-                      style={{ flexShrink: 0, width: 128, textAlign: 'left' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 128, height: 128, borderRadius: 10, overflow: 'hidden', marginBottom: 8, background: 'rgba(240,228,200,0.04)', border: `1px solid ${RED}44` }}>
+                      style={{ flexShrink: 0, width: 118, textAlign: 'left' }} className="active:scale-95 transition-transform">
+                      <div style={{ width: 118, height: 118, borderRadius: 8, overflow: 'hidden', marginBottom: 6, border: `1px solid ${CHROME_FLAT}55` }}>
                         <img src={getAlbumArt(track, 'md')} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
-                      <p style={{ fontSize: 12, color: 'rgba(240,228,200,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
+                      <p style={{ fontSize: 11, color: TEAL_LIGHT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
                     </button>
                   ))}
                 </div>
@@ -506,20 +492,24 @@ export default function DinerHomeView() {
             )}
 
             {popularArtists.length > 0 && (
-              <div style={{ marginBottom: 26 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEAL_LIGHT, marginBottom: 14, textAlign: 'center' }}>Popular Artists</p>
-                <div style={{ display: 'flex', gap: 18, overflow: 'hidden' }}>
+              <div style={{ marginBottom: 22 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <div style={{ flex: 1, height: 2, background: `${TEAL}55` }} />
+                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, whiteSpace: 'nowrap' }}>POPULAR ARTISTS</p>
+                  <div style={{ flex: 1, height: 2, background: `${TEAL}55` }} />
+                </div>
+                <div style={{ display: 'flex', gap: 16, overflow: 'hidden' }}>
                   {popularArtists.map(artist => (
                     <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
-                      style={{ flexShrink: 0, width: 100, textAlign: 'center' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', marginBottom: 8, background: 'rgba(240,228,200,0.04)', border: `2px solid ${TEAL}66` }}>
+                      style={{ flexShrink: 0, width: 92, textAlign: 'center' }} className="active:scale-95 transition-transform">
+                      <div style={{ width: 92, height: 92, borderRadius: '50%', overflow: 'hidden', marginBottom: 6, border: `2px solid ${TEAL}66` }}>
                         {artist.images?.[0]?.url
                           ? <img src={artist.images[0].url} alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.25, color: CREAM }}><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" /><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="1.5" /></svg>
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0700' }}>
+                              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.25, color: CREAM }}><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" /><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="1.5" /></svg>
                             </div>}
                       </div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artist.name}</p>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artist.name}</p>
                     </button>
                   ))}
                 </div>
@@ -528,16 +518,20 @@ export default function DinerHomeView() {
 
             {playHistory.length > 0 && (
               <div>
-                <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: CREAM, marginBottom: 14, textAlign: 'center' }}>Recently Played</p>
-                <div className="scrollbar-none" style={{ display: 'flex', gap: 14, overflowX: 'auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <div style={{ flex: 1, height: 2, background: 'rgba(240,228,200,0.2)' }} />
+                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.1em', color: CREAM, whiteSpace: 'nowrap' }}>RECENTLY PLAYED</p>
+                  <div style={{ flex: 1, height: 2, background: 'rgba(240,228,200,0.2)' }} />
+                </div>
+                <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
                   {playHistory.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
-                      style={{ flexShrink: 0, width: 128, textAlign: 'left' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 128, height: 128, borderRadius: 10, overflow: 'hidden', marginBottom: 8, background: 'rgba(240,228,200,0.04)', border: `1px solid ${TEAL}44` }}>
+                      style={{ flexShrink: 0, width: 118, textAlign: 'left' }} className="active:scale-95 transition-transform">
+                      <div style={{ width: 118, height: 118, borderRadius: 8, overflow: 'hidden', marginBottom: 6, border: `1px solid ${CHROME_FLAT}55` }}>
                         <img src={getAlbumArt(track, 'md')} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
-                      <p style={{ fontSize: 13, fontWeight: 500, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
-                      <p style={{ fontSize: 12, color: 'rgba(240,228,200,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
+                      <p style={{ fontSize: 11, color: TEAL_LIGHT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
                     </button>
                   ))}
                 </div>
@@ -545,12 +539,13 @@ export default function DinerHomeView() {
             )}
 
             {mostPopular.length === 0 && popularArtists.length === 0 && playHistory.length === 0 && (
-              <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(240,228,200,0.35)', padding: '20px 0' }}>
+              <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(240,228,200,0.35)', padding: '10px 0' }}>
                 Play a few songs and they'll show up here.
               </p>
             )}
           </div>
-        </div>
+
+        </DinerFrame>
       </div>
     </div>
   )
