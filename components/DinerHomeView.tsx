@@ -57,29 +57,14 @@ function Starburst({ size, color }: { size: number; color: string }) {
 // where the dome curve meets the straight sides, like the reference's posts
 function ChromePillar() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {Array.from({ length: 7 }).map((_, i) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} style={{
-          width: 34, height: 9, borderRadius: 5,
+          width: 46, height: 13, borderRadius: 7,
           background: `linear-gradient(90deg, ${CHROME_DARK} 0%, ${CHROME_FLAT} 30%, #fff8e8 50%, ${CHROME_FLAT} 70%, ${CHROME_DARK} 100%)`,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
         }} />
       ))}
-    </div>
-  )
-}
-
-// Speaker grille — dark textured circle with a chrome starburst compass
-function SpeakerGrille({ size }: { size: number }) {
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0, position: 'relative',
-      background: 'radial-gradient(circle at 40% 35%, #3a2a18, #1a1008 70%)',
-      border: `4px solid ${CHROME_FLAT}`, boxShadow: 'inset 0 0 20px rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{ position: 'absolute', inset: 6, borderRadius: '50%', border: `2px solid ${CHROME_DARK}66` }} />
-      <Starburst size={size * 0.6} color={CHROME_FLAT} />
-      <div style={{ position: 'absolute', width: size * 0.16, height: size * 0.16, borderRadius: '50%', background: RED, border: `2px solid ${CHROME_FLAT}` }} />
     </div>
   )
 }
@@ -89,7 +74,7 @@ function SpeakerGrille({ size }: { size: number }) {
 // reference far more closely than a plain striped ring.
 // Dome sized to actually hold the 3-line title inside its cream cap,
 // instead of a shallow sliver with the title crammed below it.
-const DOME_RATIO = 0.62
+const DOME_RATIO = 0.38
 
 function DinerFrame({ children }: { children: React.ReactNode }) {
   const archTopPad = 20
@@ -138,20 +123,20 @@ function DinerFrame({ children }: { children: React.ReactNode }) {
         }} />
 
         {/* Title, sitting directly inside the cream dome */}
-        <div style={{ position: 'absolute', bottom: 26, left: 0, right: 0, textAlign: 'center', padding: '0 60px' }}>
-          <p style={{ fontSize: 15, letterSpacing: '0.32em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
-          <h1 className="font-retro" style={{ fontSize: 44, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
-          <p style={{ fontSize: 24, letterSpacing: '0.35em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
+        <div style={{ position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', padding: '0 70px' }}>
+          <p style={{ fontSize: 13, letterSpacing: '0.3em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
+          <h1 className="font-retro" style={{ fontSize: 34, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
+          <p style={{ fontSize: 18, letterSpacing: '0.3em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
         </div>
 
         {/* Small star sparkles beside the title */}
-        <div style={{ position: 'absolute', bottom: 74, left: cx - 220 }}><Starburst size={16} color={RED} /></div>
-        <div style={{ position: 'absolute', bottom: 74, right: cx - 220 }}><Starburst size={16} color={RED} /></div>
+        <div style={{ position: 'absolute', bottom: 58, left: cx - 190 }}><Starburst size={14} color={RED} /></div>
+        <div style={{ position: 'absolute', bottom: 58, right: cx - 190 }}><Starburst size={14} color={RED} /></div>
       </div>
 
       {/* Chrome pillars at the springing point of the dome */}
-      <div style={{ position: 'absolute', top: archH - 24, left: cx - BANDS[0].r - 6, zIndex: 4 }}><ChromePillar /></div>
-      <div style={{ position: 'absolute', top: archH - 24, right: cx - BANDS[0].r - 6, zIndex: 4 }}><ChromePillar /></div>
+      <div style={{ position: 'absolute', top: archH - 40, left: cx - BANDS[0].r - 32, zIndex: 4 }}><ChromePillar /></div>
+      <div style={{ position: 'absolute', top: archH - 40, right: cx - BANDS[0].r - 32, zIndex: 4 }}><ChromePillar /></div>
 
       {/* Straight sides continuing down from the dome */}
       <div style={{ position: 'relative' }}>
@@ -174,12 +159,6 @@ function DinerFrame({ children }: { children: React.ReactNode }) {
         <div style={{ position: 'relative', margin: `0 ${FRAME_MAX / 2 - CONTENT_R}px`, background: CREAM, minHeight: 40 }}>
           {children}
         </div>
-      </div>
-
-      {/* Speaker grilles, footer flourish */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '18px 20px 0' }}>
-        <SpeakerGrille size={90} />
-        <SpeakerGrille size={90} />
       </div>
     </div>
   )
@@ -387,11 +366,6 @@ export default function DinerHomeView() {
   const progress = durationMs > 0 ? (progressMs / durationMs) * 100 : 0
   const albumArt = currentTrack?.album.images?.[0]?.url
 
-  const mostPopular = Object.values(popularity)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6)
-    .map(p => p.track)
-
   const topArtistIds = useMemo(() => {
     const counts: Record<string, { id: string; name: string; count: number }> = {}
     for (const { track, count } of Object.values(popularity)) {
@@ -438,19 +412,8 @@ export default function DinerHomeView() {
       <div className="overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
         <DinerFrame>
 
-          {/* Title band, sitting inside the dome curve */}
-          <div style={{ textAlign: 'center', padding: '18px 40px 14px' }}>
-            <p style={{ fontSize: 14, letterSpacing: '0.3em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
-            <h1 className="font-retro" style={{ fontSize: 42, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
-            <p style={{ fontSize: 22, letterSpacing: '0.35em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, opacity: 0.6 }}>
-              <div style={{ flex: 1, height: 2, background: RED }} />
-              <div style={{ flex: 1, height: 2, background: RED }} />
-            </div>
-          </div>
-
           {/* Turntable box */}
-          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `2px solid ${CHROME_FLAT}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.12)', padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${CHROME_FLAT}88`, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} style={{ width: 70 - i * 2, height: 5, borderRadius: 2, background: `rgba(240,228,200,${0.15 + i * 0.03})`, marginLeft: i }} />
@@ -465,22 +428,21 @@ export default function DinerHomeView() {
             </div>
           </div>
 
-          {/* Genres | Now Playing | Decades — one continuous instrument panel with dividers */}
-          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `2px solid ${TEAL}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.1)' }}>
-            <div className="grid grid-cols-[220px_1fr_220px]">
+          {/* Genres | Now Playing | Decades — three separate boxes, not merged */}
+          <div className="grid grid-cols-[220px_1fr_220px] gap-3" style={{ margin: '0 16px 16px' }}>
 
-              {/* Genres column */}
-              <div style={{ padding: '16px 14px', borderRight: `1px solid ${CHROME_FLAT}22` }}>
+            {/* Genres box */}
+            <div style={{ borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${RED}88`, padding: '16px 14px' }}>
                 <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>GENRES</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {DINER_GENRES.map((g) => (
                     <PillButton key={g.label} label={g.label} dotColor={RED} onClick={() => handleGenreClick(g.label)} disabled={!!loadingGenre} loading={loadingGenre === g.label} />
                   ))}
                 </div>
-              </div>
+            </div>
 
-              {/* Now Playing column */}
-              <div style={{ padding: '16px 18px' }}>
+              {/* Now Playing box */}
+              <div style={{ borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${TEAL}88`, padding: '16px 18px' }}>
                 <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em', color: TEAL_LIGHT, marginBottom: 10 }}>♫ NOW PLAYING ♫</p>
 
                 <div onClick={() => setFullscreenOpen(true)} style={{ borderRadius: 10, background: '#000', border: `2px solid ${TEAL}55`, padding: '16px 14px', textAlign: 'center', marginBottom: 14, cursor: 'pointer' }}>
@@ -577,8 +539,8 @@ export default function DinerHomeView() {
                 </div>
               </div>
 
-              {/* Decades column */}
-              <div style={{ padding: '16px 14px', borderLeft: `1px solid ${CHROME_FLAT}22` }}>
+              {/* Decades box */}
+              <div style={{ borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${TEAL}88`, padding: '16px 14px' }}>
                 <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', color: TEAL_LIGHT, marginBottom: 10 }}>DECADES</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {DECADES.map((dec) => (
@@ -586,20 +548,19 @@ export default function DinerHomeView() {
                   ))}
                 </div>
               </div>
-            </div>
           </div>
 
-          {/* Most Popular + Popular Artists + Recently Played */}
-          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: `2px solid ${RED}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.1)', padding: '18px' }}>
+          {/* Recently Played + Popular Artists */}
+          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${RED}88`, padding: '18px' }}>
 
-            {mostPopular.length > 0 && (
+            {playHistory.length > 0 && (
               <div style={{ marginBottom: 22 }}>
-                <SectionDivider label="MOST POPULAR" color={RED_LIGHT} />
-                <div style={{ display: 'flex', gap: 12, overflow: 'hidden' }}>
-                  {mostPopular.map(track => (
+                <SectionDivider label="RECENTLY PLAYED" color={RED_LIGHT} />
+                <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
+                  {playHistory.map(track => (
                     <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
                       style={{ flexShrink: 0, width: 118, textAlign: 'left' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 118, height: 118, borderRadius: 8, overflow: 'hidden', marginBottom: 6, border: `1px solid ${CHROME_FLAT}55` }}>
+                      <div style={{ width: 118, height: 118, borderRadius: 8, overflow: 'hidden', marginBottom: 6, border: '2px solid rgba(255,255,255,0.8)' }}>
                         <img src={getAlbumArt(track, 'md')} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                       <p style={{ fontSize: 12, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
@@ -611,13 +572,13 @@ export default function DinerHomeView() {
             )}
 
             {popularArtists.length > 0 && (
-              <div style={{ marginBottom: 22 }}>
+              <div>
                 <SectionDivider label="POPULAR ARTISTS" color={TEAL_LIGHT} />
                 <div style={{ display: 'flex', gap: 16, overflow: 'hidden' }}>
                   {popularArtists.map(artist => (
                     <button key={artist.id} onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
                       style={{ flexShrink: 0, width: 92, textAlign: 'center' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 92, height: 92, borderRadius: '50%', overflow: 'hidden', marginBottom: 6, border: `2px solid ${TEAL}66` }}>
+                      <div style={{ width: 92, height: 92, borderRadius: '50%', overflow: 'hidden', marginBottom: 6, border: '2px solid rgba(255,255,255,0.8)' }}>
                         {artist.images?.[0]?.url
                           ? <img src={artist.images[0].url} alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0700' }}>
@@ -631,25 +592,7 @@ export default function DinerHomeView() {
               </div>
             )}
 
-            {playHistory.length > 0 && (
-              <div>
-                <SectionDivider label="RECENTLY PLAYED" color={CREAM} />
-                <div className="scrollbar-none" style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
-                  {playHistory.map(track => (
-                    <button key={track.id} onClick={() => { if (!currentTrack && accessToken && deviceId) playTrack(accessToken, track.uri, deviceId); else addToQueue(track) }}
-                      style={{ flexShrink: 0, width: 118, textAlign: 'left' }} className="active:scale-95 transition-transform">
-                      <div style={{ width: 118, height: 118, borderRadius: 8, overflow: 'hidden', marginBottom: 6, border: `1px solid ${CHROME_FLAT}55` }}>
-                        <img src={getAlbumArt(track, 'md')} alt={track.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: CREAM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.name}</p>
-                      <p style={{ fontSize: 11, color: TEAL_LIGHT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artists.map(a => a.name).join(', ')}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {mostPopular.length === 0 && popularArtists.length === 0 && playHistory.length === 0 && (
+            {popularArtists.length === 0 && playHistory.length === 0 && (
               <p style={{ textAlign: 'center', fontSize: 14, color: 'rgba(240,228,200,0.35)', padding: '10px 0' }}>
                 Play a few songs and they'll show up here.
               </p>
