@@ -36,7 +36,6 @@ const BANDS = [
   { color: CHROME_FLAT, r: 434 },
 ]
 const CONTENT_R = 420
-const DOME_RATIO = 0.42
 
 // 8-point starburst, used for the peak badge and the speaker-grille centers
 function Starburst({ size, color }: { size: number; color: string }) {
@@ -88,6 +87,10 @@ function SpeakerGrille({ size }: { size: number }) {
 // The flat rainbow picture-frame border, with a star badge at the peak and
 // chrome pillars where the dome meets the straight sides — matching the
 // reference far more closely than a plain striped ring.
+// Dome sized to actually hold the 3-line title inside its cream cap,
+// instead of a shallow sliver with the title crammed below it.
+const DOME_RATIO = 0.62
+
 function DinerFrame({ children }: { children: React.ReactNode }) {
   const archTopPad = 20
   const maxVR = BANDS[0].r * DOME_RATIO
@@ -119,13 +122,31 @@ function DinerFrame({ children }: { children: React.ReactNode }) {
             }} />
           )
         })}
+        {/* White pinstripe trim between each color band */}
+        {BANDS.map((b, i) => {
+          const vr = (b.r - 4) * DOME_RATIO
+          return (
+            <div key={`ws${i}`} style={{
+              position: 'absolute', width: (b.r - 4) * 2, height: vr * 2, borderRadius: '50%',
+              top: archTopPad + maxVR - vr, left: cx - (b.r - 4), border: '2px solid rgba(255,255,255,0.55)',
+            }} />
+          )
+        })}
         <div style={{
           position: 'absolute', width: CONTENT_R * 2, height: CONTENT_R * DOME_RATIO * 2, borderRadius: '50%',
           top: archTopPad + maxVR - CONTENT_R * DOME_RATIO, left: cx - CONTENT_R, background: CREAM,
         }} />
+
+        {/* Title, sitting directly inside the cream dome */}
+        <div style={{ position: 'absolute', bottom: 26, left: 0, right: 0, textAlign: 'center', padding: '0 60px' }}>
+          <p style={{ fontSize: 15, letterSpacing: '0.32em', color: TEAL, fontWeight: 700 }}>WELCOME TO</p>
+          <h1 className="font-retro" style={{ fontSize: 44, fontStyle: 'italic', fontWeight: 700, color: RED, lineHeight: 1.1 }}>The Outside Inn</h1>
+          <p style={{ fontSize: 24, letterSpacing: '0.35em', color: TEAL, fontWeight: 800, marginTop: 2 }}>JUKEBOX</p>
+        </div>
+
         {/* Small star sparkles beside the title */}
-        <div style={{ position: 'absolute', top: archH - 66, left: cx - 210 }}><Starburst size={16} color={RED} /></div>
-        <div style={{ position: 'absolute', top: archH - 66, right: cx - 210 }}><Starburst size={16} color={RED} /></div>
+        <div style={{ position: 'absolute', bottom: 74, left: cx - 220 }}><Starburst size={16} color={RED} /></div>
+        <div style={{ position: 'absolute', bottom: 74, right: cx - 220 }}><Starburst size={16} color={RED} /></div>
       </div>
 
       {/* Chrome pillars at the springing point of the dome */}
@@ -142,8 +163,15 @@ function DinerFrame({ children }: { children: React.ReactNode }) {
           const inner = i < BANDS.length - 1 ? BANDS[i + 1].r : CONTENT_R
           return <div key={`r${i}`} style={{ position: 'absolute', top: 0, bottom: 0, right: cx - b.r, width: b.r - inner, background: b.color }} />
         })}
-        {/* Black cabinet interior */}
-        <div style={{ position: 'relative', margin: `0 ${FRAME_MAX / 2 - CONTENT_R}px`, background: BLACK_PANEL, minHeight: 40 }}>
+        {/* White pinstripes running down the sides, between each band */}
+        {BANDS.map((b, i) => (
+          <div key={`wl${i}`} style={{ position: 'absolute', top: 0, bottom: 0, left: cx - b.r + 2, width: 2, background: 'rgba(255,255,255,0.55)' }} />
+        ))}
+        {BANDS.map((b, i) => (
+          <div key={`wr${i}`} style={{ position: 'absolute', top: 0, bottom: 0, right: cx - b.r + 2, width: 2, background: 'rgba(255,255,255,0.55)' }} />
+        ))}
+        {/* Cream cabinet interior — light body, not a dark panel */}
+        <div style={{ position: 'relative', margin: `0 ${FRAME_MAX / 2 - CONTENT_R}px`, background: CREAM, minHeight: 40 }}>
           {children}
         </div>
       </div>
@@ -422,7 +450,7 @@ export default function DinerHomeView() {
           </div>
 
           {/* Turntable box */}
-          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}44`, padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `2px solid ${CHROME_FLAT}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.12)', padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, flexShrink: 0 }}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} style={{ width: 70 - i * 2, height: 5, borderRadius: 2, background: `rgba(240,228,200,${0.15 + i * 0.03})`, marginLeft: i }} />
@@ -438,7 +466,7 @@ export default function DinerHomeView() {
           </div>
 
           {/* Genres | Now Playing | Decades — one continuous instrument panel with dividers */}
-          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `1px solid ${CHROME_FLAT}33` }}>
+          <div style={{ margin: '0 16px 16px', borderRadius: 14, background: '#050300', border: `2px solid ${TEAL}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.1)' }}>
             <div className="grid grid-cols-[220px_1fr_220px]">
 
               {/* Genres column */}
@@ -562,7 +590,7 @@ export default function DinerHomeView() {
           </div>
 
           {/* Most Popular + Popular Artists + Recently Played */}
-          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: `1px solid ${RED}33`, padding: '18px' }}>
+          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: `2px solid ${RED}`, boxShadow: 'inset 0 0 0 4px rgba(255,255,255,0.1)', padding: '18px' }}>
 
             {mostPopular.length > 0 && (
               <div style={{ marginBottom: 22 }}>
