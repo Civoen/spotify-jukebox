@@ -19,13 +19,13 @@ const DINER_GENRES = GENRES.filter(g =>
 )
 const DECADES = ['60s', '70s', '80s', '90s', '00s', '10s', '20s'] as const
 
-const RED = '#c9302c'
-const RED_LIGHT = '#ff6b5a'
-const TEAL = '#2a8a8a'
-const TEAL_LIGHT = '#5cd6d6'
-const CREAM = '#f0e4c8'
-const CHROME_FLAT = '#c9c0a8'
-const CHROME_DARK = '#8a8270'
+const RED = '#c02b26'
+const RED_LIGHT = '#e75756'
+const TEAL = '#169093'
+const TEAL_LIGHT = '#38a5a6'
+const CREAM = '#f9edd8'
+const CHROME_FLAT = '#c4c2c5'
+const CHROME_DARK = '#8d8a86'
 const BLACK_PANEL = '#0e0800'
 
 const FRAME_MAX = 1000
