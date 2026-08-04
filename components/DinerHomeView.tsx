@@ -53,16 +53,15 @@ function Starburst({ size, color }: { size: number; color: string }) {
   )
 }
 
-// Ribbed chrome pillar — a short stack of horizontal metallic rings, sitting
-// where the dome curve meets the straight sides, like the reference's posts
+// Ribbed pillar — a short stack of flat horizontal bars, sitting where the
+// dome curve meets the straight sides, matching the flat-illustration reference
 function ChromePillar() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} style={{
-          width: 46, height: 13, borderRadius: 7,
-          background: `linear-gradient(90deg, ${CHROME_DARK} 0%, ${CHROME_FLAT} 30%, #fff8e8 50%, ${CHROME_FLAT} 70%, ${CHROME_DARK} 100%)`,
-          boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          width: 40, height: 12, borderRadius: 6,
+          background: CREAM, border: '2px solid rgba(20,10,4,0.85)',
         }} />
       ))}
     </div>
@@ -74,7 +73,7 @@ function ChromePillar() {
 // reference far more closely than a plain striped ring.
 // Dome sized to actually hold the 3-line title inside its cream cap,
 // instead of a shallow sliver with the title crammed below it.
-const DOME_RATIO = 0.46
+const DOME_RATIO = 0.5
 
 function DinerFrame({ children }: { children: React.ReactNode }) {
   const archTopPad = 20
@@ -160,6 +159,22 @@ function DinerFrame({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </div>
+    </div>
+  )
+}
+
+// Speaker grille — simple dark circle with a starburst compass center,
+// meant to sit inline flanking the bottom tile row (not as a disconnected
+// separate section, which is what didn't work last time)
+function SpeakerGrille({ size }: { size: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0, position: 'relative',
+      background: '#0c0700', border: `3px solid ${CREAM}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <Starburst size={size * 0.62} color={CREAM} />
+      <div style={{ position: 'absolute', width: size * 0.15, height: size * 0.15, borderRadius: '50%', background: RED, border: `2px solid ${CREAM}` }} />
     </div>
   )
 }
@@ -550,8 +565,10 @@ export default function DinerHomeView() {
               </div>
           </div>
 
-          {/* Recently Played + Popular Artists */}
-          <div style={{ margin: '0 16px 20px', borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${RED}88`, padding: '18px' }}>
+          {/* Recently Played + Popular Artists, with speaker grilles flanking inline */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, margin: '0 16px 20px' }}>
+            <SpeakerGrille size={70} />
+            <div style={{ flex: 1, borderRadius: 14, background: '#050300', border: '3px solid rgba(255,255,255,0.85)', boxShadow: `0 0 0 2px ${RED}88`, padding: '18px' }}>
 
             {playHistory.length > 0 && (
               <div style={{ marginBottom: 22 }}>
@@ -597,6 +614,8 @@ export default function DinerHomeView() {
                 Play a few songs and they'll show up here.
               </p>
             )}
+            </div>
+            <SpeakerGrille size={70} />
           </div>
 
         </DinerFrame>
