@@ -74,7 +74,7 @@ function ChromePillar() {
 // reference far more closely than a plain striped ring.
 // Dome sized to actually hold the 3-line title inside its cream cap,
 // instead of a shallow sliver with the title crammed below it.
-const DOME_RATIO = 0.38
+const DOME_RATIO = 0.46
 
 function DinerFrame({ children }: { children: React.ReactNode }) {
   const archTopPad = 20
