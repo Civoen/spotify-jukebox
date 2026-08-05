@@ -121,11 +121,6 @@ body {
     radial-gradient(ellipse at 50% 0%, rgba(240,193,74,0.15) 0%, transparent 55%),
     #0a0805;
 }
-.diner-bg {
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(120,40,20,0.2) 0%, transparent 55%),
-    #170b06;
-}
 .retro-panel {
   background: var(--retro-panel);
   border: 1px solid rgba(201,162,39,0.2);

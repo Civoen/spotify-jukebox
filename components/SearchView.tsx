@@ -51,8 +51,8 @@ export default function SearchView() {
   } = useJukeboxStore()
 
   // Modern theme uses the same gold accent as Standard now
-  const accentRGB = uiTheme === 'modern' ? '240,193,74' : uiTheme === 'diner' ? '201,48,44' : '201,162,39'
-  const accentText = uiTheme === 'modern' ? '#fff' : uiTheme === 'diner' ? '#f0e4c8' : 'var(--retro-cream)'
+  const accentRGB = uiTheme === 'modern' ? '240,193,74' : '201,162,39'
+  const accentText = uiTheme === 'modern' ? '#fff' : 'var(--retro-cream)'
 
   const [searchError, setSearchError] = useState<string | null>(null)
   const [artistResults, setArtistResults] = useState<SpotifyArtist[]>([])

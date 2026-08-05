@@ -313,7 +313,7 @@ export default function ModernHomeView() {
       {/* ── Header — same grid + padding as the Standard theme, so both buttons land in identical positions, with the title between them like Standard ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', width: '100%', maxWidth: 1000, margin: '0 auto', padding: '24px 16px' }}>
         <div style={{ justifySelf: 'start' }}>
-          <ThemeSwitcher color="rgba(255,255,255,0.5)" menuBg="#161018" accentColor="#f0c14a" border="1px solid rgba(240,193,74,0.3)" />
+          <ThemeSwitcher color="rgba(255,255,255,0.5)" />
         </div>
         <div style={{ textAlign: 'center', lineHeight: 1 }}>
           <p style={{ fontSize: 16, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6, fontWeight: 500 }}>Welcome To</p>

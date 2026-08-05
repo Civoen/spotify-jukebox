@@ -49,7 +49,7 @@ interface JukeboxState {
   setIsSearching: (v: boolean) => void
 
   // View
-  activeView: 'home' | 'search' | 'queue' | 'artist' | 'album' | 'playlist'
+  activeView: 'home' | 'search' | 'queue' | 'discover' | 'artist' | 'album' | 'playlist'
   setActiveView: (v: 'home' | 'search' | 'queue' | 'artist' | 'album' | 'playlist') => void
 
   // Artist page
@@ -83,8 +83,8 @@ interface JukeboxState {
   setOnKeyPress: (cb: ((key: string) => void) | null) => void
 
   // UI theme — lets users switch between the Standard (retro) and Modern designs
-  uiTheme: 'retro' | 'modern' | 'diner'
-  setUiTheme: (theme: 'retro' | 'modern' | 'diner') => void
+  uiTheme: 'retro' | 'modern'
+  setUiTheme: (theme: 'retro' | 'modern') => void
 
   // Fullscreen "Now Playing" view — opened by tapping the vinyl/album art
   fullscreenOpen: boolean
@@ -288,7 +288,7 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
   setOnKeyPress: (cb) => set({ onKeyPress: cb }),
 
   // UI theme
-  uiTheme: (typeof window !== 'undefined' && (localStorage.getItem('jukebox-ui-theme') as 'retro' | 'modern' | 'diner')) || 'retro',
+  uiTheme: (typeof window !== 'undefined' && (localStorage.getItem('jukebox-ui-theme') as 'retro' | 'modern')) || 'retro',
   setUiTheme: (theme) => {
     if (typeof window !== 'undefined') {
       try { localStorage.setItem('jukebox-ui-theme', theme) } catch {}

@@ -350,7 +350,7 @@ export default function HomeView() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: `24px ${pad}` }}>
           <div style={{ justifySelf: 'start' }}>
-            <ThemeSwitcher color="rgba(201,162,39,0.55)" menuBg="#1c1006" accentColor="#e8c060" border="1px solid rgba(201,162,39,0.3)" />
+            <ThemeSwitcher color="rgba(201,162,39,0.55)" />
           </div>
           <JukeboxLogo />
           <button onClick={() => { clearToken(); window.location.reload() }} style={{ justifySelf: 'end', color: 'rgba(201,162,39,0.45)', padding: 8 }}>
