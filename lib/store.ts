@@ -50,7 +50,7 @@ interface JukeboxState {
 
   // View
   activeView: 'home' | 'search' | 'queue' | 'discover' | 'artist' | 'album' | 'playlist'
-  setActiveView: (v: 'home' | 'search' | 'queue' | 'artist' | 'album' | 'playlist') => void
+  setActiveView: (v: 'home' | 'search' | 'queue' | 'discover' | 'artist' | 'album' | 'playlist') => void
 
   // Artist page
   activeArtist: { id: string; name: string; imageUrl?: string } | null
