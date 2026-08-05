@@ -115,10 +115,10 @@ export default function DiscoverView() {
   return (
     <div className="h-full flex flex-col overflow-hidden" style={{ background: OFFWHITE, color: INK }}>
       {/* Header */}
-      <div style={{ flexShrink: 0, padding: '22px 20px 14px', textAlign: 'center' }}>
-        <p style={{ fontSize: 13, letterSpacing: '0.15em', textTransform: 'uppercase', color: MUTED, fontWeight: 600 }}>Discover</p>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: INK, marginTop: 4 }}>Find your next song</h1>
-        <p style={{ fontSize: 13, color: MUTED, marginTop: 6 }}>
+      <div style={{ flexShrink: 0, padding: '48px 20px 18px', textAlign: 'center' }}>
+        <p style={{ fontSize: 16, letterSpacing: '0.18em', textTransform: 'uppercase', color: MUTED, fontWeight: 700 }}>Discover</p>
+        <h1 style={{ fontSize: 34, fontWeight: 800, color: INK, marginTop: 6 }}>Find your next song</h1>
+        <p style={{ fontSize: 14, color: MUTED, marginTop: 8 }}>
           Songs you&apos;ve played here, and more like them
         </p>
       </div>
@@ -147,8 +147,8 @@ export default function DiscoverView() {
 
         {!loading && next && (
           <div style={{
-            position: 'absolute', width: 'min(86vw, 380px)', aspectRatio: '0.72',
-            borderRadius: 28, background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+            position: 'absolute', width: 'min(92vw, 460px)', aspectRatio: '0.8',
+            borderRadius: 32, background: 'white', boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
             transform: 'scale(0.94) translateY(14px)', opacity: 0.6,
           }} />
         )}
@@ -161,9 +161,9 @@ export default function DiscoverView() {
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
             style={{
-              position: 'relative', width: 'min(86vw, 380px)', aspectRatio: '0.72',
-              borderRadius: 28, background: 'white', overflow: 'hidden',
-              boxShadow: '0 16px 50px rgba(0,0,0,0.18)',
+              position: 'relative', width: 'min(92vw, 460px)', aspectRatio: '0.8',
+              borderRadius: 32, background: 'white', overflow: 'hidden',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
               transform: `translate(${drag.x}px, ${drag.y}px) rotate(${rotation}deg)`,
               transition: drag.active ? 'none' : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
               cursor: drag.active ? 'grabbing' : 'grab',
@@ -175,11 +175,11 @@ export default function DiscoverView() {
               src={getAlbumArt(current, 'lg')}
               alt=""
               draggable={false}
-              style={{ width: '100%', height: '68%', objectFit: 'cover', display: 'block' }}
+              style={{ width: '100%', height: '66%', objectFit: 'cover', display: 'block' }}
             />
-            <div style={{ padding: '18px 22px', height: '32%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <p style={{ fontSize: 20, fontWeight: 800, color: INK, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{current.name}</p>
-              <p style={{ fontSize: 15, color: MUTED, marginTop: 2, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{current.artists.map(a => a.name).join(', ')}</p>
+            <div style={{ padding: '26px 28px', height: '34%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderTop: '1px solid #f0ebe2' }}>
+              <p style={{ fontSize: 26, fontWeight: 800, color: INK, lineHeight: 1.2, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '100%' }}>{current.name}</p>
+              <p style={{ fontSize: 17, color: ORANGE, fontWeight: 600, marginTop: 8, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: '100%' }}>{current.artists.map(a => a.name).join(', ')}</p>
             </div>
 
             {/* Swipe direction indicators */}
@@ -200,16 +200,16 @@ export default function DiscoverView() {
         )}
       </div>
 
-      {/* Action buttons */}
+      {/* Action buttons — pulled up to sit right against the card's bottom edge */}
       {!loading && current && (
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '18px 0 28px' }}>
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 36, marginTop: -38, padding: '0 0 30px', position: 'relative', zIndex: 5 }}>
           <button onClick={() => commitSwipe('left')} className="active:scale-90 transition-transform"
-            style={{ width: 62, height: 62, borderRadius: '50%', background: 'white', border: '2px solid #e8e2d8', color: '#d64545', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' }}>
-            <svg width="24" height="24" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+            style={{ width: 74, height: 74, borderRadius: '50%', background: 'white', border: '2px solid #e8e2d8', color: '#d64545', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 22px rgba(0,0,0,0.12)' }}>
+            <svg width="28" height="28" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
           </button>
           <button onClick={() => commitSwipe('right')} className="active:scale-90 transition-transform"
-            style={{ width: 74, height: 74, borderRadius: '50%', background: `linear-gradient(180deg, ${ORANGE}, ${ORANGE_DARK})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 22px ${ORANGE}55` }}>
-            <svg width="28" height="28" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            style={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(180deg, ${ORANGE}, ${ORANGE_DARK})`, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 10px 26px ${ORANGE}66` }}>
+            <svg width="34" height="34" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </div>
       )}
