@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Jukebox — Your Spotify Jukebox',
-  description: 'A retro-modern vertical jukebox powered by Spotify',
+  title: 'Outside Inn Jukebox',
+  description: 'The Outside Inn jukebox. Search for a song, add it to the queue and hear it play.',
+  applicationName: 'Outside Inn Jukebox',
+  appleWebApp: { capable: true, title: 'Outside Inn Jukebox', statusBarStyle: 'black-translucent' },
 }
 
 export const viewport: Viewport = {

@@ -1,5 +1,55 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Special+Elite&display=swap');
+
+/* Fonts are self-hosted (app/fonts) so the kiosk never depends on Google Fonts
+   being reachable — a Wi-Fi blip can't change the typography. */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/playfair-display-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/playfair-display-latin-ext-700-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('./fonts/playfair-display-latin-900-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('./fonts/playfair-display-latin-ext-900-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/special-elite-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/special-elite-latin-ext-400-normal.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
 
 :root {
   --neon-pink: #ff2d78;
@@ -23,6 +73,53 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Kiosk behaviour ─────────────────────────────────────────────────────────
+   This runs on a public touchscreen, so ordinary browser behaviours are
+   switched off: no text selection or long-press callout, no dragging images
+   off the page, no double-tap zoom. Text fields are the exception. */
+html {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+img, svg, a {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+:focus { outline: none; }
+:focus-visible:not(input):not(textarea) { outline: 2px solid rgba(240, 193, 74, 0.7); outline-offset: 2px; }
+
+/* ── Tactile press feedback ──────────────────────────────────────────────────
+   Every button dips slightly and dims a touch while it is held, then springs
+   back on release. Lives in the base layer and uses the standalone `scale`
+   property, so any Tailwind `active:scale-*` on a specific button still wins
+   and inline `transform` styles are left alone. */
+@layer base {
+  button, [role='button'], .pressable {
+    cursor: pointer;
+    transition:
+      scale 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+      filter 0.2s ease,
+      background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  }
+  button:active:not(:disabled), [role='button']:active, .pressable:active {
+    scale: 0.95;
+    filter: brightness(0.9);
+    transition-duration: 0.06s;
+  }
+  button:disabled { cursor: default; }
+}
+/* Wide rows barely need to move for the press to register */
+.pressable-row { transition: scale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease; }
+.pressable-row:active { scale: 0.985; transition-duration: 0.06s; }
 
 html, body {
   height: 100%;
@@ -83,6 +180,19 @@ body {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+@keyframes view-in {
+  from { transform: translateY(10px) scale(0.992); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes row-in {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes badge-pop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -102,9 +212,27 @@ body {
   0%, 100% { box-shadow: 0 0 6px 2px currentColor, 0 0 20px 4px currentColor; opacity: 0.9; }
   50% { box-shadow: 0 0 10px 3px currentColor, 0 0 35px 8px currentColor; opacity: 1; }
 }
+/* Neon sign lettering: a near-white core with the colour carried by the halo.
+   --neon sets the halo colour (falls back to the text colour). */
 @keyframes text-neon-pulse {
-  0%, 100% { text-shadow: 0 0 6px currentColor, 0 0 16px currentColor, 0 0 34px currentColor; opacity: 0.92; }
-  50% { text-shadow: 0 0 10px currentColor, 0 0 26px currentColor, 0 0 52px currentColor; opacity: 1; }
+  0%, 100% {
+    text-shadow:
+      0 0 2px #fff, 0 0 8px var(--neon, currentColor), 0 0 20px var(--neon, currentColor),
+      0 0 42px var(--neon, currentColor), 0 0 80px var(--neon, currentColor);
+    opacity: 0.94;
+  }
+  50% {
+    text-shadow:
+      0 0 3px #fff, 0 0 12px var(--neon, currentColor), 0 0 30px var(--neon, currentColor),
+      0 0 60px var(--neon, currentColor), 0 0 120px var(--neon, currentColor);
+    opacity: 1;
+  }
+}
+/* Neon tubes breathe by fading their glow layer, which is far cheaper to
+   animate than the blurred shadows themselves */
+@keyframes neon-breathe {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 .animate-spin-slow { animation: spin-slow 10s linear infinite; }
@@ -134,6 +262,11 @@ body {
 .animate-add-pop { animation: add-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .animate-ring-pulse { animation: ring-pulse 0.5s ease-out; }
 .animate-slide-up { animation: slide-up 0.3s ease-out; }
+/* Screens ease in instead of snapping when you change tab or open a page */
+.animate-view-in { animation: view-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Result rows arrive in a quick cascade; --i is the row index */
+.animate-row-in { animation: row-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(min(var(--i, 0), 10) * 28ms); }
+.animate-badge-pop { animation: badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .neon-flicker { animation: neon-flicker 6s ease-in-out infinite; }
 .neon-pulse { animation: neon-pulse 2s ease-in-out infinite; }
@@ -191,4 +324,37 @@ input[type='range'].scrubber-gold::-webkit-slider-thumb {
 }
 input[type='range'].scrubber-gold:hover::-webkit-slider-thumb {
   transform: scale(1.2);
+}
+
+/* ── Discover ────────────────────────────────────────────────────────────── */
+.skeleton-light {
+  background: linear-gradient(100deg, #efe7da 30%, #f8f2e8 50%, #efe7da 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+@keyframes discover-ambient-in { from { opacity: 0; } to { opacity: 0.55; } }
+.discover-ambient { opacity: 0.55; animation: discover-ambient-in 0.6s ease both; }
+/* An undone card comes back in from the side it left by */
+@keyframes discover-return-left {
+  from { transform: translate(-130%, 30px) rotate(-18deg); opacity: 0; }
+  to { transform: translate(0, 0) rotate(0); opacity: 1; }
+}
+@keyframes discover-return-right {
+  from { transform: translate(130%, 30px) rotate(18deg); opacity: 0; }
+  to { transform: translate(0, 0) rotate(0); opacity: 1; }
+}
+.discover-return-left { animation: discover-return-left 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+.discover-return-right { animation: discover-return-right 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Momentum scrolling that stays inside its own list */
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Reduced-motion: drop the entrance and press animations only. The spinning
+   record and equaliser are the jukebox's display, so they keep running. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-view-in, .animate-row-in, .animate-slide-up, .animate-badge-pop { animation: none; }
+  button:active:not(:disabled), [role='button']:active, .pressable:active, .pressable-row:active { scale: 1; }
 }

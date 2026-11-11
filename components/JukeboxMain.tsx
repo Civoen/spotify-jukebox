@@ -16,6 +16,7 @@ import SpotifyPlayer from './SpotifyPlayer'
 import OnScreenKeyboard from './OnScreenKeyboard'
 import FullscreenPlayer from './FullscreenPlayer'
 import PlayerDisconnectedBanner from './PlayerDisconnectedBanner'
+import Toast from './Toast'
 
 export default function JukeboxMain() {
   const activeView = useJukeboxStore((s) => s.activeView)
@@ -45,12 +46,20 @@ export default function JukeboxMain() {
             </motion.div>
           )}
         </AnimatePresence>
-        {activeView === 'search' && <SearchView />}
-        {activeView === 'queue' && <QueueView />}
-        {activeView === 'discover' && <DiscoverView />}
-        {activeView === 'artist' && <ArtistView />}
-        {activeView === 'album' && <AlbumView />}
-        {activeView === 'playlist' && <PlaylistView />}
+        {/* Every other screen eases in when you switch to it */}
+        {activeView !== 'home' && (
+          <div key={activeView} className="absolute inset-0 animate-view-in">
+            {activeView === 'search' && <SearchView />}
+            {activeView === 'queue' && <QueueView />}
+            {activeView === 'discover' && <DiscoverView />}
+            {activeView === 'artist' && <ArtistView />}
+            {activeView === 'album' && <AlbumView />}
+            {activeView === 'playlist' && <PlaylistView />}
+          </div>
+        )}
+
+        {/* Shared confirmation / error toast */}
+        <Toast />
       </div>
 
       {/* Bottom nav */}

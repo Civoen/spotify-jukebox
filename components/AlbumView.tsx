@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import { getAlbumTracks, playTrack, type SpotifyTrack } from '@/lib/spotify'
 import TrackRow from './TrackRow'
+import ErrorState, { friendlyError } from './ErrorState'
 
 export default function AlbumView() {
   const { activeAlbum, accessToken, deviceId, currentTrack, setActiveView, addManyToQueue } = useJukeboxStore()
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (!activeAlbum || !accessToken) return
@@ -19,9 +21,9 @@ export default function AlbumView() {
       .then((fetched) =>
         setTracks(fetched.map((t) => ({ ...t, album: { name: activeAlbum.name, images: activeAlbum.images } })))
       )
-      .catch((err) => setError(String(err?.message ?? err)))
+      .catch((err) => setError(friendlyError(err)))
       .finally(() => setLoading(false))
-  }, [activeAlbum, accessToken])
+  }, [activeAlbum, accessToken, reloadKey])
 
   const handlePlayAll = () => {
     if (!tracks.length || !accessToken || !deviceId) return
@@ -73,6 +75,7 @@ export default function AlbumView() {
             {!loading && tracks.length > 0 && (
               <button
                 onClick={handlePlayAll}
+                aria-label="Play all"
                 className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-[#f0c14a] hover:bg-[#ffd76a] active:scale-90 transition-all duration-200 glow-gold"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="white">
@@ -86,10 +89,8 @@ export default function AlbumView() {
 
       {/* Track list */}
       <div className="flex-1 overflow-y-auto px-4 pb-6 pt-3">
-        {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 mb-3">
-            <p className="text-red-400 text-xs font-mono break-all">{error}</p>
-          </div>
+        {error && !loading && (
+          <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
         )}
         {loading ? (
           <div className="flex flex-col gap-3">
@@ -108,7 +109,7 @@ export default function AlbumView() {
             {tracks.map((track, i) => (
               <div key={track.id} className="flex items-center gap-2">
                 <span className="text-white/20 text-xs w-5 text-right flex-shrink-0">{i + 1}</span>
-                <div className="flex-1"><TrackRow track={track} /></div>
+                <div className="flex-1"><TrackRow track={track} index={i} /></div>
               </div>
             ))}
           </div>

@@ -190,13 +190,17 @@ export default function ModernHomeView() {
     try {
       const songs = DECADE_SONGS[decade] ?? []
       const tracks = await searchDecadeSongs(songs, accessToken, decade)
-      if (!tracks.length) return
+      if (!tracks.length) {
+        useJukeboxStore.getState().showToast("Couldn't find songs for that one. Try another.", 'error')
+        return
+      }
       const shuffled = [...tracks]
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
       const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      useJukeboxStore.getState().showToast(ct || !did ? `${decade} mix lined up for after the queue` : `Now playing: ${decade} mix`)
       if (ct) {
         setContextQueue(shuffled)
       } else if (did) {
@@ -205,8 +209,8 @@ export default function ModernHomeView() {
       } else {
         setContextQueue(shuffled)
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      useJukeboxStore.getState().showToast("Couldn't load that mix. Try again in a moment.", 'error')
     } finally {
       setLoadingDecade(null)
     }
@@ -217,13 +221,17 @@ export default function ModernHomeView() {
     setLoadingGenre(label)
     try {
       const tracks = await searchGenreSongs(label, accessToken)
-      if (!tracks.length) return
+      if (!tracks.length) {
+        useJukeboxStore.getState().showToast("Couldn't find songs for that one. Try another.", 'error')
+        return
+      }
       const shuffled = [...tracks]
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
       const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      useJukeboxStore.getState().showToast(ct || !did ? `${label} mix lined up for after the queue` : `Now playing: ${label} mix`)
       if (ct) {
         setContextQueue(shuffled)
       } else if (did) {
@@ -232,8 +240,8 @@ export default function ModernHomeView() {
       } else {
         setContextQueue(shuffled)
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      useJukeboxStore.getState().showToast("Couldn't load that mix. Try again in a moment.", 'error')
     } finally {
       setLoadingGenre(null)
     }

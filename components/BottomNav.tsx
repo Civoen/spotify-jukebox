@@ -61,11 +61,11 @@ export default function BottomNav() {
     <div className="flex-shrink-0" style={{ background: bg, transition: 'background 0.3s' }}>
 
       {/* Glow diffusion — brighter on active tab */}
-      <div style={{ display: 'flex', height: 14 }}>
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'home' ? `${TAB_COLORS.home}bb` : `${TAB_COLORS.home}30`}, transparent)`, transition: 'background 0.3s' }} />
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'search' ? `${TAB_COLORS.search}bb` : `${TAB_COLORS.search}30`}, transparent)`, transition: 'background 0.3s' }} />
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'queue' ? `${TAB_COLORS.queue}bb` : `${TAB_COLORS.queue}30`}, transparent)`, transition: 'background 0.3s' }} />
-        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'discover' ? `${TAB_COLORS.discover}bb` : `${TAB_COLORS.discover}30`}, transparent)`, transition: 'background 0.3s' }} />
+      <div style={{ display: 'flex', height: 18 }}>
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'home' ? TAB_COLORS.home : `${TAB_COLORS.home}3a`}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'search' ? TAB_COLORS.search : `${TAB_COLORS.search}3a`}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'queue' ? TAB_COLORS.queue : `${TAB_COLORS.queue}3a`}, transparent)`, transition: 'background 0.3s' }} />
+        <div style={{ flex: 1, background: `linear-gradient(180deg, ${activeTab === 'discover' ? TAB_COLORS.discover : `${TAB_COLORS.discover}3a`}, transparent)`, transition: 'background 0.3s' }} />
       </div>
 
       {/* Nav buttons */}
@@ -78,15 +78,17 @@ export default function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
+              aria-current={active ? 'page' : undefined}
               className={`flex flex-col items-center gap-1.5 py-3 px-8 rounded-2xl transition-all duration-200
                 ${active ? 'opacity-100' : 'opacity-30 hover:opacity-50'}`}
-              style={active ? { background: `${color}12`, boxShadow: `0 0 14px 2px ${color}22` } : {}}
+              style={active ? { background: `${color}1c`, boxShadow: `0 0 18px 3px ${color}44, inset 0 0 14px ${color}22`, filter: `drop-shadow(0 0 6px ${color}99)` } : {}}
             >
               <div className="relative">
                 {tab.icon(active, color)}
                 {tab.id === 'queue' && queue.length > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white"
+                    key={queue.length}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white animate-badge-pop"
                     style={{ background: TAB_COLORS.queue }}
                   >
                     {queue.length > 9 ? '9+' : queue.length}

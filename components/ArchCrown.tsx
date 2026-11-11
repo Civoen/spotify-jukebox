@@ -33,24 +33,39 @@ export function ArchCrown({ albumArt, isPlaying, vinylSize = 880, topPad = 0, vi
     }
   }
 
+  // A tube is the outer 6px band of its circle: colour at both edges, hot in the middle
+  const tube = (color: string, core: string) =>
+    `radial-gradient(circle closest-side, transparent calc(100% - 6.5px), ${color} calc(100% - 6px), ${core} calc(100% - 3px), ${color} 100%)`
+  const bloom: React.CSSProperties = { mixBlendMode: 'screen', pointerEvents: 'none' }
+
+  // Clipped along the bottom only (the arch is the top half of full circles),
+  // so the neon halo can spill freely above and to the sides
   return (
-    <div style={{ position: 'relative', height: archH, flexShrink: 0, overflow: 'hidden' }}>
+    <div style={{ position: 'relative', height: archH, flexShrink: 0, clipPath: 'inset(-400px -400px 0px -400px)' }}>
       {/* Chrome outer ring */}
       <div style={ring(60, chromeH)} />
       <div style={ring(50, '#050200')} />
-      {/* Pink neon */}
-      <div style={ring(44, '#ff2d78', { boxShadow: '0 0 16px 5px #ff2d7866', animation: 'neon-pulse 2.5s ease-in-out 0s infinite' })} />
+      {/* Pink neon tube — hot near-white core, saturated edges */}
+      <div style={ring(44, tube('#ff2d78', '#ffd9e6'))} />
       <div style={ring(38, '#050200')} />
-      {/* Cyan neon */}
-      <div style={ring(32, '#00d4ff', { boxShadow: '0 0 14px 4px #00d4ff55', animation: 'neon-pulse 2.8s ease-in-out 1.2s infinite' })} />
+      {/* Cyan neon tube */}
+      <div style={ring(32, tube('#00d4ff', '#dcf9ff'))} />
       <div style={ring(26, '#050200')} />
       {/* Inner chrome ring */}
       <div style={ring(20, chromeH, { opacity: 0.85 })} />
       <div style={ring(14, '#050200')} />
       {/* Gold accent */}
-      <div style={ring(8, '#c9a227', { opacity: 0.55 })} />
+      <div style={ring(8, '#c9a227', { opacity: 0.7, boxShadow: '0 0 10px 1px rgba(240,193,74,0.35)' })} />
       {/* Dark interior */}
       <div style={ring(2, '#030100')} />
+
+      {/* Neon bloom — light spilling off each tube onto the chrome, the dark
+          channels between and the cabinet around the arch. Screen-blended so
+          it only ever adds light, and breathing slowly out of step. */}
+      <div style={ring(44, 'transparent', { ...bloom, boxShadow: '0 0 10px 2px #ff2d78, 0 0 30px 8px rgba(255,45,120,0.75), 0 0 80px 22px rgba(255,45,120,0.42), 0 0 170px 50px rgba(255,45,120,0.2)', animation: 'neon-breathe 2.6s ease-in-out infinite' })} />
+      <div style={ring(38, 'transparent', { ...bloom, boxShadow: 'inset 0 0 8px 2px rgba(255,45,120,0.9), inset 0 0 26px 8px rgba(255,45,120,0.45)', animation: 'neon-breathe 2.6s ease-in-out infinite' })} />
+      <div style={ring(32, 'transparent', { ...bloom, boxShadow: '0 0 10px 2px #00d4ff, 0 0 28px 8px rgba(0,212,255,0.6), 0 0 70px 20px rgba(0,212,255,0.28)', animation: 'neon-breathe 3s ease-in-out 1.2s infinite' })} />
+      <div style={ring(26, 'transparent', { ...bloom, boxShadow: 'inset 0 0 8px 2px rgba(0,212,255,0.9), inset 0 0 30px 10px rgba(0,212,255,0.45), inset 0 0 90px 30px rgba(0,212,255,0.16)', animation: 'neon-breathe 3s ease-in-out 1.2s infinite' })} />
 
       {/* Vinyl */}
       <div

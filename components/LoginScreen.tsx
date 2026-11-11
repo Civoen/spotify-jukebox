@@ -40,10 +40,10 @@ export default function LoginScreen() {
       </div>
 
       <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
-        Jukebox
+        Outside Inn Jukebox
       </h1>
       <p className="text-white/40 text-sm text-center mb-10 max-w-xs">
-        Your personal retro-modern jukebox,<br />powered by Spotify
+        Connect the venue&apos;s Spotify account<br />to start the music
       </p>
 
       {/* Feature pills */}

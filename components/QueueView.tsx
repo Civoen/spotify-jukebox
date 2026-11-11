@@ -103,7 +103,7 @@ export default function QueueView() {
         </div>
         {(queue.length > 0 || contextQueue.length > 0) && (
           <button
-            onClick={clearQueue}
+            onClick={() => { clearQueue(); useJukeboxStore.getState().showToast('Queue cleared', 'info') }}
             className="text-white/30 text-sm hover:text-white/60 transition-colors px-4 py-2.5 rounded-full glass"
           >
             Clear all

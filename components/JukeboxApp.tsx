@@ -5,6 +5,7 @@ import { useJukeboxStore } from '@/lib/store'
 import { getValidAccessToken } from '@/lib/spotify'
 import LoginScreen from './LoginScreen'
 import JukeboxMain from './JukeboxMain'
+import KioskGuards from './KioskGuards'
 
 export default function JukeboxApp() {
   const { accessToken, setAccessToken } = useJukeboxStore()
@@ -30,9 +31,10 @@ export default function JukeboxApp() {
     return () => clearInterval(interval)
   }, [setAccessToken])
 
-  if (accessToken === null) {
-    return <LoginScreen />
-  }
-
-  return <JukeboxMain />
+  return (
+    <>
+      <KioskGuards />
+      {accessToken === null ? <LoginScreen /> : <JukeboxMain />}
+    </>
+  )
 }

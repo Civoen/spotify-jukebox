@@ -6,6 +6,10 @@ export interface QueueTrack extends SpotifyTrack {
   addedAt: number
 }
 
+export type ToastKind = 'success' | 'info' | 'error'
+
+let toastTimer: ReturnType<typeof setTimeout> | null = null
+
 interface JukeboxState {
   // Auth
   accessToken: string | null
@@ -95,6 +99,11 @@ interface JukeboxState {
   playerDisconnected: boolean
   setPlayerDisconnected: (v: boolean) => void
 
+  // Toast — one shared confirmation/error message shown above the bottom nav,
+  // so every "added", "removed" and "couldn't load" reads the same app-wide
+  toast: { id: number; message: string; kind: ToastKind } | null
+  showToast: (message: string, kind?: ToastKind) => void
+
   // Popularity — tracks how many times each track has been played on this jukebox
   popularity: Record<string, { track: SpotifyTrack; count: number }>
   incrementPopularity: (track: SpotifyTrack) => void
@@ -154,6 +163,7 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
     }
     set((s) => ({ queue: [...s.queue, queueTrack] }))
     persistQueue(get().queue)
+    get().showToast(`Added “${track.name}” to the queue`)
     // Flash recently added
     set({ recentlyAdded: track.id })
     setTimeout(() => set({ recentlyAdded: null }), 1500)
@@ -168,6 +178,9 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
     }))
     set((s) => ({ queue: [...s.queue, ...queueTracks] }))
     persistQueue(get().queue)
+    if (queueTracks.length > 0) {
+      get().showToast(`Added ${queueTracks.length} song${queueTracks.length === 1 ? '' : 's'} to the queue`)
+    }
   },
   removeFromQueue: (queueId) => {
     set((s) => ({ queue: s.queue.filter((t) => t.queueId !== queueId) }))
@@ -302,6 +315,14 @@ export const useJukeboxStore = create<JukeboxState>((set, get) => ({
 
   playerDisconnected: false,
   setPlayerDisconnected: (v) => set({ playerDisconnected: v }),
+
+  // Toast
+  toast: null,
+  showToast: (message, kind = 'success') => {
+    if (toastTimer) clearTimeout(toastTimer)
+    set({ toast: { id: Date.now() + Math.random(), message, kind } })
+    toastTimer = setTimeout(() => set({ toast: null }), kind === 'error' ? 3600 : 2200)
+  },
 
   // Popularity
   popularity: (() => {

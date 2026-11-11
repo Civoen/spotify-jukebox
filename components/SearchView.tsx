@@ -5,6 +5,8 @@ import { useJukeboxStore } from '@/lib/store'
 import { searchAll, getAlbumTracks, playTrack, type SpotifyArtist, type SpotifyTrack, type SpotifyAlbum } from '@/lib/spotify'
 import { GENRES } from '@/lib/genres'
 import TrackRow from './TrackRow'
+import ErrorState, { friendlyError } from './ErrorState'
+import Art from './Art'
 
 const GENRE_LABELS = new Set(GENRES.map(g => g.label.toLowerCase()))
 
@@ -48,6 +50,7 @@ export default function SearchView() {
     currentTrack,
     addManyToQueue,
     uiTheme,
+    showToast,
   } = useJukeboxStore()
 
   // Modern theme uses the same gold accent as Standard now
@@ -97,10 +100,7 @@ export default function SearchView() {
           saveRecentSearch(q.trim())
           setRecentSearches(getRecentSearches())
         })
-        .catch((err) => {
-          const msg = String(err?.message ?? err)
-          setSearchError(msg.includes('429') ? 'Too many requests — wait a bit' : msg)
-        })
+        .catch((err) => setSearchError(friendlyError(err)))
         .finally(() => setIsSearching(false))
     },
     [accessToken, setSearchResults, setIsSearching]
@@ -130,7 +130,8 @@ export default function SearchView() {
         playTrack(accessToken, tracks[0].uri, deviceId)
       }
     } catch {
-      // Silently ignore — album may be restricted; user can still tap in to browse it
+      // Album may be restricted — say so; they can still tap in to browse it
+      showToast(`Couldn't load “${album.name}”. Try again in a moment.`, 'error')
     } finally {
       setPlayingAlbumId(null)
     }
@@ -232,12 +233,12 @@ export default function SearchView() {
         )}
 
         {/* Search results */}
-        {!isSearching && hasResults && (
+        {!isSearching && !searchError && hasResults && (
           <div className="flex flex-col gap-1 mt-1">
             {showSongs && searchResults.length > 0 && (
               <div className="mb-4">
                 <p className="text-white/30 text-xs uppercase tracking-widest mb-2">Songs</p>
-                {searchResults.map((track, idx) => <TrackRow key={track.id + idx} track={track} />)}
+                {searchResults.map((track, idx) => <TrackRow key={track.id + idx} track={track} index={idx} />)}
               </div>
             )}
 
@@ -251,9 +252,7 @@ export default function SearchView() {
                       onClick={() => { setActiveArtist({ id: artist.id, name: artist.name, imageUrl: artist.images?.[0]?.url }); setActiveView('artist') }}
                       className="flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition-all text-left w-full"
                     >
-                      <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white/10">
-                        {artist.images?.[0]?.url && <img src={artist.images[0].url} alt={artist.name} className="w-full h-full object-cover" />}
-                      </div>
+                      <Art src={artist.images?.[0]?.url} alt={artist.name} className="w-14 h-14 rounded-full flex-shrink-0 text-white" />
                       <div className="flex-1 min-w-0">
                         <p className="text-white text-base font-medium truncate">{artist.name}</p>
                         <p className="text-white/40 text-sm mt-0.5">Artist</p>
@@ -312,9 +311,7 @@ export default function SearchView() {
         )}
 
         {!isSearching && searchError && (
-          <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <p className="text-red-400 text-xs font-mono break-all">{searchError}</p>
-          </div>
+          <ErrorState message={searchError} onRetry={() => doSearch(searchQuery)} />
         )}
 
         {!isSearching && !searchError && searchQuery && !hasResults && (

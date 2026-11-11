@@ -4,20 +4,26 @@ import { useEffect, useState } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import { getArtistTopTracks, getArtistAlbums, getAlbumTracks, type SpotifyTrack, type SpotifyAlbum } from '@/lib/spotify'
 import TrackRow from './TrackRow'
+import ErrorState, { friendlyError } from './ErrorState'
+import Art from './Art'
 
 function AlbumCard({ album, token }: { album: SpotifyAlbum; token: string }) {
   const [expanded, setExpanded] = useState(false)
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = () => {
+    setLoading(true)
+    setError(null)
+    getAlbumTracks(album.id, token)
+      .then((fetched) => setTracks(fetched.map((t) => ({ ...t, album: { name: album.name, images: album.images } }))))
+      .catch((err) => setError(friendlyError(err)))
+      .finally(() => setLoading(false))
+  }
 
   const toggle = () => {
-    if (!expanded && tracks.length === 0) {
-      setLoading(true)
-      getAlbumTracks(album.id, token)
-        .then((fetched) => setTracks(fetched.map((t) => ({ ...t, album: { name: album.name, images: album.images } }))))
-        .catch(console.error)
-        .finally(() => setLoading(false))
-    }
+    if (!expanded && tracks.length === 0) load()
     setExpanded((v) => !v)
   }
 
@@ -26,11 +32,7 @@ function AlbumCard({ album, token }: { album: SpotifyAlbum; token: string }) {
   return (
     <div className="rounded-2xl overflow-hidden glass border border-white/5">
       <button onClick={toggle} className="flex items-center gap-3 p-3 w-full text-left hover:bg-white/5 transition-colors">
-        {art ? (
-          <img src={art} alt={album.name} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
-        ) : (
-          <div className="w-14 h-14 rounded-xl bg-white/10 flex-shrink-0" />
-        )}
+        <Art src={art} alt={album.name} className="w-14 h-14 rounded-xl flex-shrink-0 text-white" />
         <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-semibold truncate">{album.name}</p>
           <p className="text-white/40 text-xs mt-0.5">
@@ -59,10 +61,12 @@ function AlbumCard({ album, token }: { album: SpotifyAlbum; token: string }) {
                 </div>
               ))}
             </div>
+          ) : error ? (
+            <ErrorState compact message={error} onRetry={load} />
           ) : (
             <div className="flex flex-col gap-0.5 pt-1">
-              {tracks.map((track) => (
-                <TrackRow key={track.id} track={track} />
+              {tracks.map((track, i) => (
+                <TrackRow key={track.id} track={track} index={i} />
               ))}
             </div>
           )}
@@ -78,6 +82,7 @@ export default function ArtistView() {
   const [albums, setAlbums] = useState<SpotifyAlbum[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (!activeArtist || !accessToken) return
@@ -91,12 +96,9 @@ export default function ArtistView() {
         setTracks(t)
         setAlbums(a)
       })
-      .catch((err) => {
-        console.error(err)
-        setError(String(err?.message ?? err))
-      })
+      .catch((err) => setError(friendlyError(err)))
       .finally(() => setLoading(false))
-  }, [activeArtist, accessToken])
+  }, [activeArtist, accessToken, reloadKey])
 
   if (!activeArtist) return null
 
@@ -131,10 +133,8 @@ export default function ArtistView() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-6 pt-3">
-        {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 mb-3">
-            <p className="text-red-400 text-xs font-mono break-all">{error}</p>
-          </div>
+        {error && !loading && (
+          <ErrorState message={error} onRetry={() => setReloadKey((k) => k + 1)} />
         )}
 
         {loading ? (
@@ -159,8 +159,8 @@ export default function ArtistView() {
                   <p className="text-white/25 text-xs">{tracks.length} songs</p>
                 </div>
                 <div className="overflow-y-auto flex flex-col gap-1" style={{ maxHeight: 420 }}>
-                  {tracks.map((track) => (
-                    <TrackRow key={track.id} track={track} />
+                  {tracks.map((track, i) => (
+                    <TrackRow key={track.id} track={track} index={i} />
                   ))}
                 </div>
               </div>

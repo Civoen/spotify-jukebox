@@ -23,7 +23,7 @@ function rowLabel(i: number) {
 function JukeboxLogo() {
   return (
     <div style={{ textAlign: 'center', lineHeight: 1 }}>
-      <div style={{ fontSize: 20, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(201,162,39,0.55)', fontFamily: 'monospace', marginBottom: 6 }}>♪ welcome to ♪</div>
+      <div style={{ fontSize: 20, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(240,193,74,0.8)', textShadow: '0 0 10px rgba(240,193,74,0.5)', fontFamily: 'monospace', marginBottom: 6 }}>♪ welcome to ♪</div>
       <div
         className="font-retro text-neon-pulse"
         style={{
@@ -31,13 +31,14 @@ function JukeboxLogo() {
           fontWeight: 900,
           letterSpacing: '-0.01em',
           lineHeight: 1.05,
-          color: '#CEC29B',
-          textShadow: '0 0 6px #CEC29B, 0 0 16px #CEC29B, 0 0 34px #CEC29B',
+          color: '#fff4d6',
+          ['--neon' as string]: '#f0c14a',
+          textShadow: '0 0 2px #fff, 0 0 8px #f0c14a, 0 0 20px #f0c14a, 0 0 42px #f0c14a, 0 0 80px #f0c14a',
         }}
       >
         The Outside Inn
       </div>
-      <div style={{ fontSize: 20, letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(201,162,39,0.4)', fontFamily: 'monospace', marginTop: 7 }}>── jukebox ──</div>
+      <div style={{ fontSize: 20, letterSpacing: '0.45em', textTransform: 'uppercase', color: 'rgba(240,193,74,0.7)', textShadow: '0 0 10px rgba(240,193,74,0.45)', fontFamily: 'monospace', marginTop: 7 }}>── jukebox ──</div>
     </div>
   )
 }
@@ -172,7 +173,10 @@ export default function HomeView() {
     try {
       const songs = DECADE_SONGS[decade] ?? []
       const tracks = await searchDecadeSongs(songs, accessToken, decade)
-      if (!tracks.length) return
+      if (!tracks.length) {
+        useJukeboxStore.getState().showToast("Couldn't find songs for that one. Try another.", 'error')
+        return
+      }
       // Fisher-Yates shuffle
       const shuffled = [...tracks]
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -180,6 +184,7 @@ export default function HomeView() {
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
       const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      useJukeboxStore.getState().showToast(ct || !did ? `${decade} mix lined up for after the queue` : `Now playing: ${decade} mix`)
       if (ct) {
         // Song playing — this decade becomes the new fallback playlist,
         // picking up right after any user-queued songs finish
@@ -192,8 +197,8 @@ export default function HomeView() {
         // Device not ready yet — load fallback queue so it's ready to go
         setContextQueue(shuffled)
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      useJukeboxStore.getState().showToast("Couldn't load that mix. Try again in a moment.", 'error')
     } finally {
       setLoadingDecade(null)
     }
@@ -204,13 +209,17 @@ export default function HomeView() {
     setLoadingGenre(genre)
     try {
       const tracks = await searchGenreSongs(genre, accessToken)
-      if (!tracks.length) return
+      if (!tracks.length) {
+        useJukeboxStore.getState().showToast("Couldn't find songs for that one. Try another.", 'error')
+        return
+      }
       const shuffled = [...tracks]
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
       const { currentTrack: ct, deviceId: did, setContextQueue } = useJukeboxStore.getState()
+      useJukeboxStore.getState().showToast(ct || !did ? `${genre} mix lined up for after the queue` : `Now playing: ${genre} mix`)
       if (ct) {
         setContextQueue(shuffled)
       } else if (did) {
@@ -219,8 +228,8 @@ export default function HomeView() {
       } else {
         setContextQueue(shuffled)
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      useJukeboxStore.getState().showToast("Couldn't load that mix. Try again in a moment.", 'error')
     } finally {
       setLoadingGenre(null)
     }
@@ -368,12 +377,12 @@ export default function HomeView() {
             <ArchCrown albumArt={albumArt} isPlaying={isPlaying} vinylSize={880} topPad={100} vinylScale={0.9} onVinylClick={() => setFullscreenOpen(true)} />
           </div>
           {/* Neon separator under arch — clipped to jukebox body width (500px from center each side) */}
-          <div style={{ flexShrink: 0, margin: '0 max(0px, calc(50% - 500px))' }}>
+          <div style={{ flexShrink: 0, margin: '0 max(0px, calc(50% - 500px))', position: 'relative', zIndex: 11, boxShadow: '0 0 50px 12px rgba(255,45,120,0.32)' }}>
             <div style={{ height: 3, background: chromeH, opacity: 0.75 }} />
             <div style={{ height: 2, background: '#050200' }} />
-            <div style={{ height: 3, background: '#ff2d78', opacity: 0.6, boxShadow: '0 0 8px 2px #ff2d7866', animation: 'neon-pulse 2.5s ease-in-out infinite' }} />
+            <div style={{ position: 'relative', mixBlendMode: 'screen', height: 3, background: 'linear-gradient(180deg, #ff2d78, #ffc2d8, #ff2d78)', boxShadow: '0 0 3px #ff2d78, 0 0 16px 2px rgba(255,45,120,0.45)', animation: 'neon-breathe 2.6s ease-in-out infinite' }} />
             <div style={{ height: 2, background: '#050200' }} />
-            <div style={{ height: 3, background: '#00d4ff', opacity: 0.6, boxShadow: '0 0 8px 2px #00d4ff66', animation: 'neon-pulse 2.8s ease-in-out 1.2s infinite' }} />
+            <div style={{ position: 'relative', mixBlendMode: 'screen', height: 3, background: 'linear-gradient(180deg, #00d4ff, #dcf9ff, #00d4ff)', boxShadow: '0 0 3px #00d4ff, 0 0 16px 2px rgba(0,212,255,0.4)', animation: 'neon-breathe 3s ease-in-out 1.2s infinite' }} />
             <div style={{ height: 2, background: '#050200' }} />
             <div style={{ height: 3, background: chromeH, opacity: 0.65 }} />
             <div style={{ height: 2, background: '#050200' }} />
@@ -386,9 +395,9 @@ export default function HomeView() {
             {/* Left border strips — gap values: 60,50,44,38,32,26,20,14,8,2 → radii 500,490,484,478,472,466,460,454,448,442 */}
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 500px)', bottom: 0, width: 10, background: chrome,    opacity: 0.75, zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 490px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 484px)', bottom: 0, width: 6,  background: '#ff2d78', opacity: 0.6, boxShadow: '2px 0 10px 2px #ff2d7855', zIndex: 10, pointerEvents: 'none', animation: 'neon-pulse 2.5s ease-in-out infinite' }} />
+            <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 484px)', bottom: 0, width: 6,  background: 'linear-gradient(90deg, #ff2d78, #ffc2d8, #ff2d78)', boxShadow: '0 0 8px 1px #ff2d78, 0 0 22px 5px rgba(255,45,120,0.7), 0 0 55px 14px rgba(255,45,120,0.35)', zIndex: 11, mixBlendMode: 'screen', pointerEvents: 'none', animation: 'neon-breathe 2.6s ease-in-out infinite' }} />
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 478px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 472px)', bottom: 0, width: 6,  background: '#00d4ff', opacity: 0.6, boxShadow: '2px 0 10px 2px #00d4ff55', zIndex: 10, pointerEvents: 'none', animation: 'neon-pulse 2.8s ease-in-out 1.2s infinite' }} />
+            <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 472px)', bottom: 0, width: 6,  background: 'linear-gradient(90deg, #00d4ff, #dcf9ff, #00d4ff)', boxShadow: '0 0 8px 1px #00d4ff, 0 0 22px 5px rgba(0,212,255,0.6), 0 0 55px 14px rgba(0,212,255,0.28)', zIndex: 11, mixBlendMode: 'screen', pointerEvents: 'none', animation: 'neon-breathe 3s ease-in-out 1.2s infinite' }} />
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 466px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 460px)', bottom: 0, width: 6,  background: chrome,    opacity: 0.65, zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, left: 'calc(50% - 454px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
@@ -397,9 +406,9 @@ export default function HomeView() {
             {/* Right border strips (mirrored) */}
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 500px)', bottom: 0, width: 10, background: chrome,    opacity: 0.75, zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 490px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 484px)', bottom: 0, width: 6,  background: '#ff2d78', opacity: 0.6, boxShadow: '-2px 0 10px 2px #ff2d7855', zIndex: 10, pointerEvents: 'none', animation: 'neon-pulse 2.5s ease-in-out infinite' }} />
+            <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 484px)', bottom: 0, width: 6,  background: 'linear-gradient(90deg, #ff2d78, #ffc2d8, #ff2d78)', boxShadow: '0 0 8px 1px #ff2d78, 0 0 22px 5px rgba(255,45,120,0.7), 0 0 55px 14px rgba(255,45,120,0.35)', zIndex: 11, mixBlendMode: 'screen', pointerEvents: 'none', animation: 'neon-breathe 2.6s ease-in-out infinite' }} />
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 478px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 472px)', bottom: 0, width: 6,  background: '#00d4ff', opacity: 0.6, boxShadow: '-2px 0 10px 2px #00d4ff55', zIndex: 10, pointerEvents: 'none', animation: 'neon-pulse 2.8s ease-in-out 1.2s infinite' }} />
+            <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 472px)', bottom: 0, width: 6,  background: 'linear-gradient(90deg, #00d4ff, #dcf9ff, #00d4ff)', boxShadow: '0 0 8px 1px #00d4ff, 0 0 22px 5px rgba(0,212,255,0.6), 0 0 55px 14px rgba(0,212,255,0.28)', zIndex: 11, mixBlendMode: 'screen', pointerEvents: 'none', animation: 'neon-breathe 3s ease-in-out 1.2s infinite' }} />
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 466px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 460px)', bottom: 0, width: 6,  background: chrome,    opacity: 0.65, zIndex: 10, pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', top: 0, right: 'calc(50% - 454px)', bottom: 0, width: 6,  background: '#050200', zIndex: 10, pointerEvents: 'none' }} />
@@ -446,7 +455,7 @@ export default function HomeView() {
                   <button onClick={handlePrev} className="active:scale-95 transition-transform" style={{ width: 58, height: 58, borderRadius: '50%', border: '2px solid rgba(201,162,39,0.35)', color: 'var(--retro-gold)', background: 'rgba(201,162,39,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="22" height="22" viewBox="0 0 14 14" fill="none"><rect x="2" y="2.5" width="3" height="9" rx="1" fill="currentColor" /><path d="M12 2.5L6 7L12 11.5V2.5Z" fill="currentColor" opacity="0.7" /></svg>
                   </button>
-                  <button onClick={togglePlay} className="active:scale-95" style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--retro-gold)', color: '#0e0800', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 20px rgba(201,162,39,0.5), 0 3px 10px rgba(0,0,0,0.7)', border: '3px solid rgba(255,240,180,0.3)', transition: 'transform 0.1s' }}>
+                  <button onClick={togglePlay} className="active:scale-95" style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--retro-gold)', color: '#0e0800', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 14px rgba(240,193,74,0.9), 0 0 38px rgba(240,193,74,0.55), 0 0 80px rgba(240,193,74,0.25), 0 3px 10px rgba(0,0,0,0.7)', border: '3px solid rgba(255,240,180,0.45)', transition: 'transform 0.1s' }}>
                     {isPlaying
                       ? <svg width="26" height="26" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="2" width="4" height="14" rx="1.5" /><rect x="11" y="2" width="4" height="14" rx="1.5" /></svg>
                       : <svg width="26" height="26" viewBox="0 0 18 18" fill="currentColor"><path d="M4 3L16 9L4 15V3Z" /></svg>}
@@ -586,7 +595,7 @@ export default function HomeView() {
                         padding: 2,
                         borderRadius: 12,
                         background: isLoading ? neon : chromeH,
-                        boxShadow: isLoading ? `0 0 20px ${neon}66` : '0 0 6px rgba(201,162,39,0.15)',
+                        boxShadow: isLoading ? `0 0 14px ${neon}, 0 0 36px ${neon}99` : `0 0 8px ${neon}66, 0 0 22px ${neon}33`,
                         opacity: loadingDecade && !isLoading ? 0.35 : 1,
                         transition: 'all 0.2s',
                       }}
@@ -606,12 +615,12 @@ export default function HomeView() {
                         overflow: 'hidden',
                         border: 'none',
                         boxShadow: isLoading
-                          ? `inset 0 0 16px ${neonDim}`
-                          : 'inset 0 0 12px rgba(0,0,0,0.5)',
+                          ? `inset 0 0 22px ${neon}55`
+                          : `inset 0 0 18px ${neon}1f`,
                       }}
                     >
                       {/* Neon colour wash at bottom */}
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: `linear-gradient(0deg, ${neonDim} 0%, transparent 100%)`, pointerEvents: 'none' }} />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 56, background: `linear-gradient(0deg, ${neon}40 0%, transparent 100%)`, pointerEvents: 'none' }} />
 
                       {isLoading ? (
                         <>
@@ -621,7 +630,7 @@ export default function HomeView() {
                       ) : (
                         <>
                           {/* Vinyl record */}
-                          <svg width="58" height="58" viewBox="0 0 64 64" style={{ marginTop: 4, filter: `drop-shadow(0 0 6px ${neon}55)` }}>
+                          <svg width="58" height="58" viewBox="0 0 64 64" style={{ marginTop: 4, filter: `drop-shadow(0 0 5px ${neon}) drop-shadow(0 0 14px ${neon}88)` }}>
                             <defs>
                               <linearGradient id={`cg-${decade}`} x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stopColor="#e8d5b0" />
@@ -641,7 +650,7 @@ export default function HomeView() {
                             <circle cx="32" cy="32" r="3.5" fill={neon} />
                           </svg>
 
-                          <span className="font-retro" style={{ fontSize: 22, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 14px ${neon}88`, lineHeight: 1 }}>&apos;{decade}</span>
+                          <span className="font-retro" style={{ fontSize: 22, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 2px #fff, 0 0 10px ${neon}, 0 0 24px ${neon}, 0 0 44px ${neon}aa`, lineHeight: 1 }}>&apos;{decade}</span>
                           <span className="font-typewriter" style={{ fontSize: 8, color: 'rgba(201,162,39,0.5)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Shuffle Play</span>
                         </>
                       )}
@@ -667,7 +676,7 @@ export default function HomeView() {
                       padding: 2,
                       borderRadius: 12,
                       background: isLoading ? neon : chromeH,
-                      boxShadow: isLoading ? `0 0 20px ${neon}66` : '0 0 6px rgba(201,162,39,0.15)',
+                      boxShadow: isLoading ? `0 0 14px ${neon}, 0 0 36px ${neon}99` : `0 0 8px ${neon}66, 0 0 22px ${neon}33`,
                       opacity: loadingGenre && !isLoading ? 0.35 : 1,
                       transition: 'all 0.2s',
                     }}
@@ -685,14 +694,14 @@ export default function HomeView() {
                         border: 'none',
                         position: 'relative',
                         overflow: 'hidden',
-                        boxShadow: isLoading ? `inset 0 0 16px ${neonDim}` : 'inset 0 0 12px rgba(0,0,0,0.5)',
+                        boxShadow: isLoading ? `inset 0 0 22px ${neon}55` : `inset 0 0 18px ${neon}1f`,
                       }}
                     >
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 36, background: `linear-gradient(0deg, ${neonDim} 0%, transparent 100%)`, pointerEvents: 'none' }} />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 44, background: `linear-gradient(0deg, ${neon}40 0%, transparent 100%)`, pointerEvents: 'none' }} />
                       {isLoading ? (
                         <div className="skeleton" style={{ width: 20, height: 20, borderRadius: '50%' }} />
                       ) : (
-                        <span className="font-retro" style={{ fontSize: 16, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 10px ${neon}88`, lineHeight: 1 }}>{label}</span>
+                        <span className="font-retro" style={{ fontSize: 16, fontWeight: 900, color: neon, letterSpacing: '0.01em', textShadow: `0 0 2px #fff, 0 0 8px ${neon}, 0 0 20px ${neon}, 0 0 38px ${neon}aa`, lineHeight: 1 }}>{label}</span>
                       )}
                     </button>
                   </div>

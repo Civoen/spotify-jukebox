@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import { playTrack, formatDuration, getAlbumArt } from '@/lib/spotify'
 import type { SpotifyTrack } from '@/lib/spotify'
+import Art from './Art'
 
 interface Props {
   track: SpotifyTrack
@@ -11,9 +12,11 @@ interface Props {
   queueId?: string
   isFirstInQueue?: boolean
   waitTime?: string
+  /** Position in a freshly loaded list — rows cascade in when this is set */
+  index?: number
 }
 
-export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, waitTime }: Props) {
+export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, waitTime, index }: Props) {
   const {
     accessToken,
     deviceId,
@@ -24,6 +27,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
     isPlaying,
     setActiveView,
     setActiveArtist,
+    showToast,
   } = useJukeboxStore()
 
   const [justAdded, setJustAdded] = useState(false)
@@ -36,7 +40,10 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
     if (!queueId) return
     const { queue, reorderQueue } = useJukeboxStore.getState()
     const idx = queue.findIndex(t => t.queueId === queueId)
-    if (idx > 0) reorderQueue(idx, 0)
+    if (idx > 0) {
+      reorderQueue(idx, 0)
+      showToast(`“${track.name}” plays next`)
+    }
   }
 
   const handleAdd = (e?: React.MouseEvent) => {
@@ -51,6 +58,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
     if (!currentTrack && accessToken && deviceId) {
       // Nothing playing — play immediately
       playTrack(accessToken, track.uri, deviceId)
+      showToast(`Now playing “${track.name}”`)
       if (!stayOnPage) setActiveView('home')
     } else {
       // Something already playing — add to queue
@@ -62,24 +70,24 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
 
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (queueId) removeFromQueue(queueId)
+    if (queueId) {
+      removeFromQueue(queueId)
+      showToast(`Removed “${track.name}”`, 'info')
+    }
   }
 
   return (
     <div
       onClick={() => handleAdd()}
-      className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all duration-200
-        ${isCurrentlyPlaying ? 'bg-pink-500/10 border border-pink-500/20' : 'hover:bg-white/5 active:bg-white/8'}
-        ${wasRecentlyAdded ? 'animate-slide-up' : ''}`}
+      style={index !== undefined ? ({ '--i': index } as React.CSSProperties) : undefined}
+      className={`pressable-row flex items-center gap-3 p-4 rounded-xl cursor-pointer
+        ${isCurrentlyPlaying ? 'bg-pink-500/10 border border-pink-500/20' : 'hover:bg-white/5 active:bg-white/10'}
+        ${wasRecentlyAdded ? 'animate-slide-up' : index !== undefined ? 'animate-row-in' : ''}`}
     >
       {/* Art */}
       <div className={`relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden
         ${isCurrentlyPlaying ? 'ring-2 ring-pink-500' : ''}`}>
-        {art ? (
-          <img src={art} alt={track.album.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-white/10" />
-        )}
+        <Art src={art} alt={track.album.name} className="w-full h-full text-white" />
         {isCurrentlyPlaying && (
           <div className="absolute inset-0 bg-black/50 flex items-end justify-center pb-1.5">
             <div className="flex gap-0.5 items-end h-4">
@@ -165,6 +173,7 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
           )}
           <button
             onClick={handleAdd}
+            aria-label={`Add ${track.name} to the queue`}
             className={`relative w-11 h-11 rounded-full flex items-center justify-center
               transition-all duration-200 active:scale-90
               ${justAdded
@@ -181,14 +190,6 @@ export default function TrackRow({ track, inQueue, queueId, isFirstInQueue, wait
               </svg>
             )}
           </button>
-          {justAdded && (
-            <span
-              className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-[#f0c14a] animate-slide-up"
-              aria-hidden="true"
-            >
-              Added
-            </span>
-          )}
         </div>
       )}
     </div>

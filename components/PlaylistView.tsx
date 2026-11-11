@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import { useJukeboxStore } from '@/lib/store'
 import { getPlaylistTracks, searchTracks, playTrack, type SpotifyTrack } from '@/lib/spotify'
 import TrackRow from './TrackRow'
+import ErrorState from './ErrorState'
 
 export default function PlaylistView() {
   const { activePlaylist, accessToken, deviceId, currentTrack, setActiveView, addManyToQueue } = useJukeboxStore()
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     if (!activePlaylist || !accessToken) return
@@ -24,7 +26,7 @@ export default function PlaylistView() {
           .catch(() => setError('restricted'))
       )
       .finally(() => setLoading(false))
-  }, [activePlaylist, accessToken])
+  }, [activePlaylist, accessToken, reloadKey])
 
   const handlePlayAll = () => {
     if (!tracks.length || !accessToken || !deviceId) return
@@ -90,24 +92,14 @@ export default function PlaylistView() {
       <div className="flex-1 overflow-y-auto px-4 pb-6 pt-3">
         {error === 'fallback' && (
           <p className="text-white/25 text-xs text-center py-2 mb-1">
-            Showing similar tracks — playlist requires Spotify Extended Access
+            Showing similar songs for this playlist
           </p>
         )}
-        {error === 'restricted' && (
-          <div className="flex flex-col items-center justify-center py-12 gap-4 text-center px-4">
-            <div className="w-14 h-14 rounded-2xl glass flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" opacity="0.4">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z" fill="white"/>
-              </svg>
-            </div>
-            <div>
-              <p className="text-white/60 text-sm font-medium">Playlist access restricted</p>
-              <p className="text-white/30 text-xs mt-1 leading-relaxed">
-                Your Spotify app needs Extended API access to load playlist tracks.
-                Apply in the Spotify Developer Dashboard under your app settings.
-              </p>
-            </div>
-          </div>
+        {error === 'restricted' && !loading && (
+          <ErrorState
+            message="This playlist isn't available on the jukebox right now. Try searching for a song instead."
+            onRetry={() => setReloadKey((k) => k + 1)}
+          />
         )}
         {loading ? (
           <div className="flex flex-col gap-3">
@@ -123,8 +115,8 @@ export default function PlaylistView() {
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            {tracks.map((track) => (
-              <TrackRow key={track.id} track={track} />
+            {tracks.map((track, i) => (
+              <TrackRow key={track.id} track={track} index={i} />
             ))}
           </div>
         )}
